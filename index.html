@@ -1,31 +1,156 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#b76e79"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><title>Coiffure sur Nantes</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fff7f7;color:#292226}header{background:linear-gradient(135deg,#b76e79,#d99aa3);color:#fff;padding:25px 18px;border-radius:0 0 28px 28px}h1{margin:0;font-size:24px}header p{margin:4px 0 0;opacity:.9}.wrap{max-width:760px;margin:auto;padding:16px 16px 100px}.card{background:#fff;border-radius:18px;padding:15px;box-shadow:0 3px 15px #0000000d;margin-bottom:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.btn{border:0;border-radius:13px;padding:12px 15px;background:#b76e79;color:#fff;font-weight:700;font-size:14px}.btn2{background:#f3e1e4;color:#7f4650}h2{margin:5px 0 15px}.muted{font-size:13px;color:#7d7075}.pill{font-size:11px;border-radius:99px;padding:5px 8px;background:#e7f5e9;color:#32723b}.pending{background:#fff0cf;color:#8a6100}.cancel{background:#f8dddd;color:#9a3d43}input,select,textarea{width:100%;padding:12px;border:1px solid #eadde0;border-radius:12px;margin:5px 0 12px;background:#fff;font-size:15px;font-family:inherit}textarea{min-height:80px;resize:vertical}label{font-size:13px;font-weight:650}.section-title{font-weight:800;margin:14px 0 8px}.calendar-head{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;text-align:center;margin-bottom:12px}.calendar-head button{border:0;background:#f3e1e4;border-radius:12px;height:38px;font-size:20px;color:#7f4650}.month{font-weight:800;font-size:18px;text-transform:capitalize}.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}.dow{text-align:center;font-size:11px;color:#8c7d82;padding:4px 0}.day{min-height:54px;border:1px solid #f0e5e7;background:#fff;border-radius:10px;padding:5px;position:relative;text-align:left}.day.muted-day{opacity:.38}.day.today{border:2px solid #b76e79}.day.selected{background:#f7e6e8}.num{font-size:12px;font-weight:700}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#b76e79;margin:1px}.day .count{font-size:9px;color:#7b6268}.appt{border-left:4px solid #b76e79}.appt.pending-border{border-left-color:#e2aa35}.appt.cancel-border{border-left-color:#c75d67}.empty{text-align:center;color:#8a7b80;padding:25px}.danger{background:#9d454d}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.info-box{background:#fff7f7;border-radius:12px;padding:10px}.info-box b{display:block;font-size:13px}.info-box span{font-size:13px;color:#6f6267;word-break:break-word}nav{position:fixed;z-index:5;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around}nav button{border:0;background:none;color:#75666b;font-size:11px}nav b{display:block;font-size:19px}nav .active{color:#b76e79;font-weight:700}@media(max-width:430px){.info-grid{grid-template-columns:1fr}}
-</style></head><body>
-<header><h1>Coiffure sur Nantes</h1><p>Agenda & gestion de votre activité ✨</p></header><main class="wrap" id="app"></main><nav><button id="n-home" onclick="show('home')"><b>⌂</b>Accueil</button><button id="n-rdv" onclick="show('rdv')"><b>📅</b>Rendez-vous</button><button id="n-clients" onclick="clients()"><b>👩🏾</b>Clientes</button><button id="n-budget" onclick="show('budget')"><b>💰</b>Budget</button></nav>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#bb7180">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Coiffure sur Nantes</title>
+<style>
+:root{--rose:#bb7180;--rose2:#f5e4e7;--ink:#29252a;--muted:#77727a;--bg:#fbf7f8;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:22px 22px 12px;background:var(--bg);position:sticky;top:0;z-index:5}
+h1{font-size:28px;margin:0 0 4px}h2{font-size:22px;margin:0 0 16px}.sub{color:var(--muted)}
+main{padding:10px 18px 100px}.card{background:var(--card);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 3px 18px #00000008}
+button{border:0;border-radius:15px;padding:13px 17px;background:var(--rose);color:#fff;font-weight:700;font-size:15px}
+button.secondary{background:var(--rose2);color:#714652}button.danger{background:#f3dadd;color:#9b3949}
+input,select,textarea{width:100%;padding:15px 16px;border:1px solid #ddd5d8;border-radius:15px;background:#fff;font-size:16px;color:var(--ink)}
+textarea{min-height:88px;resize:vertical}label{display:block;font-weight:700;margin:15px 0 7px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(4,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;font-size:13px;border-radius:12px}nav button.active{color:var(--rose);font-weight:800}
+.navicon{display:block;font-size:23px;line-height:25px}.hidden{display:none!important}
+.calendar-head{display:flex;justify-content:space-between;align-items:center}.month{font-weight:800;font-size:19px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}.dow{text-align:center;font-size:11px;color:#888;padding:4px}
+.day{min-height:52px;background:#fafafa;border-radius:12px;padding:7px;text-align:left;border:1px solid #eee;color:#333}.day.empty{background:transparent;border:0}.day.today{border:2px solid var(--rose)}.day.selected{background:var(--rose2);border-color:var(--rose)}
+.dot{width:6px;height:6px;background:var(--rose);border-radius:50%;display:inline-block;margin-left:3px}.appt{padding:12px 0;border-bottom:1px solid #eee}.appt:last-child{border-bottom:0}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--rose2);color:#744651;font-size:12px;font-weight:700}
+.client-card{display:flex;justify-content:space-between;gap:12px;align-items:center}.client-name{font-weight:800;font-size:17px}.small{font-size:13px;color:var(--muted)}
+.emptymsg{color:#777;text-align:center;padding:25px 5px}
+a.link{color:var(--rose);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<header><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></header>
+<main id="app"></main>
+<nav>
+<button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
+<button data-tab="appointments"><span class="navicon">📅</span>Rendez-vous</button>
+<button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
+<button data-tab="budget"><span class="navicon">💰</span>Budget</button>
+</nav>
 <script>
-const K='csn_data';
-let d=JSON.parse(localStorage.getItem(K)||'null')||{rdv:[],clients:[],depenses:[],services:[{n:'Knotless medium',p:50},{n:'Knotless fine',p:50},{n:'Vanille twist',p:50},{n:'Fulani twist',p:50},{n:'Cornrows',p:45}]};
-// Compatibilité avec l'ancienne version où les clientes étaient de simples chaînes.
-d.clients=(d.clients||[]).map((c,i)=>typeof c==='string'?{id:'old-'+i,name:c,phone:'',email:'',note:''}:c);
-d.rdv=(d.rdv||[]).map((a,i)=>{if(!a.clientName)a.clientName=a.client||''; if(!a.clientId){let c=d.clients.find(x=>x.name===a.clientName); if(c)a.clientId=c.id;} return a});
-let viewDate=new Date(),selectedDate=new Date().toISOString().slice(0,10);const save=()=>localStorage.setItem(K,JSON.stringify(d));const money=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});const iso=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;const fmtDate=s=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long'}).format(new Date(s+'T12:00:00'));const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
-function active(n){document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+n)?.classList.add('active')}function show(x){if(x==='home')home();if(x==='rdv')rdv();if(x==='budget')budget()}
-function home(){active('home');let today=iso(new Date()),r=d.rdv.filter(x=>x.date===today);app.innerHTML=`<h2>Bonjour 👋🏾</h2><div class="card"><div class="row"><div><div class="muted">Aujourd'hui</div><b>${fmtDate(today)}</b></div><span class="pill">${r.length} RDV</span></div>${r.length?r.map(card).join(''):'<div class="empty">Aucun rendez-vous aujourd’hui</div>'}</div><button class="btn" style="width:100%" onclick="newRdv()">＋ Nouveau rendez-vous</button>`}
-function getClient(a){return d.clients.find(c=>c.id===a.clientId)||d.clients.find(c=>c.name===a.clientName)||null}
-function card(a){let cls=a.status==='En attente'?'pending-border':a.status==='Annulé'?'cancel-border':'';let pc=a.status==='En attente'?'pending':a.status==='Annulé'?'cancel':'';let c=getClient(a);return `<div class="card appt ${cls}" onclick="editRdv(${d.rdv.indexOf(a)})"><div class="row"><b>${esc(a.time)} · ${esc(a.clientName)}</b><b>${money(a.price)}</b></div><div class="muted">${esc(a.service)} · Acompte ${money(a.deposit)}</div>${c?.phone?`<div class="muted">📞 ${esc(c.phone)}</div>`:''}<div style="margin-top:6px"><span class="pill ${pc}">${esc(a.status)}</span></div></div>`}
-function dayCell(dt,muted){let s=iso(dt),items=d.rdv.filter(x=>x.date===s&&x.status!=='Annulé');let cl=muted?'muted-day':'';if(s===iso(new Date()))cl+=' today';if(s===selectedDate)cl+=' selected';return `<button class="day ${cl}" onclick="selectDay('${s}')"><span class="num">${dt.getDate()}</span><div>${items.slice(0,3).map(()=>'<span class="dot"></span>').join('')}</div>${items.length?`<div class="count">${items.length} RDV</div>`:''}</button>`}
-function rdv(){active('rdv');let y=viewDate.getFullYear(),m=viewDate.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7,cells=[];for(let i=0;i<start;i++)cells.push(dayCell(new Date(y,m,-(start-i-1)),true));for(let n=1;n<=last.getDate();n++)cells.push(dayCell(new Date(y,m,n),false));while(cells.length%7)cells.push(dayCell(new Date(y,m+1,cells.length-last.getDate()-start+1),true));let month=new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(first),r=d.rdv.filter(x=>x.date===selectedDate).sort((a,b)=>a.time.localeCompare(b.time));app.innerHTML=`<div class="calendar-head"><button onclick="prevMonth()">‹</button><div class="month">${month}</div><button onclick="nextMonth()">›</button></div><div class="week">${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(x=>`<div class="dow">${x}</div>`).join('')}</div><div class="week">${cells.join('')}</div><div class="row" style="margin:16px 0 8px"><div><b>${fmtDate(selectedDate)}</b><div class="muted">${r.length} rendez-vous</div></div><button class="btn" onclick="newRdv()">＋ Ajouter</button></div>${r.length?r.map(card).join(''):'<div class="card empty">Aucun rendez-vous ce jour.<br><br><button class="btn" onclick="newRdv()">Ajouter un rendez-vous</button></div>'}`}
-function selectDay(s){selectedDate=s;viewDate=new Date(s+'T12:00:00');rdv()}function prevMonth(){viewDate.setMonth(viewDate.getMonth()-1);selectedDate=iso(new Date(viewDate.getFullYear(),viewDate.getMonth(),1));rdv()}function nextMonth(){viewDate.setMonth(viewDate.getMonth()+1);selectedDate=iso(new Date(viewDate.getFullYear(),viewDate.getMonth(),1));rdv()}
-function clientOptions(selected=''){let opts=d.clients.map(c=>`<option value="${esc(c.id)}" ${c.id===selected?'selected':''}>${esc(c.name)}</option>`).join('');return `<option value="">＋ Nouvelle cliente</option>${opts}`}
-function newRdv(){app.innerHTML=`<div class="row"><h2>Nouveau rendez-vous</h2><button class="btn btn2" onclick="rdv()">Annuler</button></div><div class="card"><div class="section-title">👩🏾 Informations cliente</div><label>Cliente existante</label><select id="existingClient" onchange="fillClient()">${clientOptions()}</select><label>Prénom et nom *</label><input id="clientName" placeholder="Ex. Sarah Dupont"><div class="info-grid"><div><label>Téléphone</label><input id="phone" type="tel" placeholder="06 00 00 00 00"></div><div><label>E-mail</label><input id="email" type="email" placeholder="cliente@email.com"></div></div><label>Notes sur la cliente</label><textarea id="clientNote" placeholder="Préférences, longueur habituelle, informations utiles..."></textarea><div class="section-title">📅 Rendez-vous</div><label>Prestation</label><select id="service" onchange="price.value=this.options[this.selectedIndex].dataset.p">${d.services.map(s=>`<option data-p="${s.p}">${esc(s.n)}</option>`).join('')}</select><div class="info-grid"><div><label>Date *</label><input id="date" type="date" value="${selectedDate}"></div><div><label>Heure *</label><input id="time" type="time" value="10:00"></div></div><div class="info-grid"><div><label>Prix (€)</label><input id="price" type="number" value="${d.services[0]?.p||0}"></div><div><label>Acompte (€)</label><input id="deposit" type="number" value="20"></div></div><label>Statut</label><select id="status"><option>Confirmé</option><option>En attente</option><option>Annulé</option></select><label>Notes du rendez-vous</label><textarea id="notes" placeholder="Mèches fournies, modèle, couleur, etc."></textarea><button class="btn" style="width:100%" onclick="addRdv()">Enregistrer le rendez-vous</button></div>`}
-function fillClient(){let c=d.clients.find(x=>x.id===existingClient.value);if(!c){clientName.value='';phone.value='';email.value='';clientNote.value='';return}clientName.value=c.name;phone.value=c.phone||'';email.value=c.email||'';clientNote.value=c.note||''}
-function addRdv(){let name=clientName.value.trim(),ph=phone.value.trim(),em=email.value.trim(),cn=clientNote.value.trim();if(!name||!date.value||!time.value)return alert('Remplis au minimum le nom de la cliente, la date et l’heure.');let c=d.clients.find(x=>x.id===existingClient.value);if(!c)c=d.clients.find(x=>x.name.toLowerCase()===name.toLowerCase());if(c){c.name=name;c.phone=ph;c.email=em;c.note=cn}else{c={id:'c-'+Date.now(),name,phone:ph,email:em,note:cn};d.clients.push(c)}let a={clientId:c.id,clientName:c.name,service:service.value,date:date.value,time:time.value,price:+price.value,deposit:+deposit.value,status:status.value,notes:notes.value};if(d.rdv.some(x=>x.date===a.date&&x.time===a.time&&x.status!=='Annulé'))return alert('⚠️ Ce créneau est déjà occupé.');d.rdv.push(a);save();selectedDate=a.date;viewDate=new Date(a.date+'T12:00:00');rdv()}
-function editRdv(i){let a=d.rdv[i],c=getClient(a);app.innerHTML=`<div class="row"><h2>Rendez-vous</h2><button class="btn btn2" onclick="rdv()">Retour</button></div><div class="card"><div class="row"><b>${esc(a.clientName)}</b><span>${money(a.price)}</span></div><p class="muted">${fmtDate(a.date)} à ${esc(a.time)}</p><div class="info-grid">${c?.phone?`<div class="info-box"><b>📞 Téléphone</b><span>${esc(c.phone)}</span></div>`:''}${c?.email?`<div class="info-box"><b>✉️ E-mail</b><span>${esc(c.email)}</span></div>`:''}</div><p><b>Prestation :</b> ${esc(a.service)}</p><p>Acompte : <b>${money(a.deposit)}</b> · Solde : <b>${money(a.price-a.deposit)}</b></p><p><span class="pill ${a.status==='En attente'?'pending':a.status==='Annulé'?'cancel':''}">${esc(a.status)}</span></p>${c?.note?`<div class="info-box"><b>Notes cliente</b><span>${esc(c.note)}</span></div>`:''}${a.notes?`<div class="info-box" style="margin-top:8px"><b>Notes du rendez-vous</b><span>${esc(a.notes)}</span></div>`:''}<button class="btn" style="width:100%;margin-top:10px" onclick="editClient(${i})">Modifier les informations</button><button class="btn danger" style="width:100%;margin-top:8px" onclick="cancelRdv(${i})">Annuler ce rendez-vous</button></div>`}
-function editClient(i){let a=d.rdv[i],c=getClient(a)||{id:a.clientId||'c-'+Date.now(),name:a.clientName,phone:'',email:'',note:''};app.innerHTML=`<div class="row"><h2>Modifier la cliente</h2><button class="btn btn2" onclick="editRdv(${i})">Retour</button></div><div class="card"><label>Prénom et nom</label><input id="ecname" value="${esc(c.name)}"><label>Téléphone</label><input id="ecphone" type="tel" value="${esc(c.phone||'')}"><label>E-mail</label><input id="ecemail" type="email" value="${esc(c.email||'')}"><label>Notes sur la cliente</label><textarea id="ecnote">${esc(c.note||'')}</textarea><button class="btn" style="width:100%" onclick="saveClientEdit(${i},'${esc(c.id)}')">Enregistrer</button></div>`}
-function saveClientEdit(i,id){let c=d.clients.find(x=>x.id===id);if(!c){c={id,name:'',phone:'',email:'',note:''};d.clients.push(c)}c.name=ecname.value.trim();c.phone=ecphone.value.trim();c.email=ecemail.value.trim();c.note=ecnote.value.trim();d.rdv[i].clientId=c.id;d.rdv[i].clientName=c.name;save();editRdv(i)}
-function cancelRdv(i){d.rdv[i].status='Annulé';save();rdv()}
-function clients(){active('clients');let list=d.clients;app.innerHTML=`<div class="row"><h2>Clientes</h2><span class="pill">${list.length} cliente${list.length>1?'s':''}</span></div><div class="card">${list.length?list.map(c=>{let rr=d.rdv.filter(a=>a.clientId===c.id||a.clientName===c.name);return `<div class="card" style="margin:0 0 8px;background:#fff7f7" onclick="clientDetail('${esc(c.id)}')"><div class="row"><b>👩🏾 ${esc(c.name)}</b><span class="muted">${rr.length} RDV</span></div>${c.phone?`<div class="muted">📞 ${esc(c.phone)}</div>`:''}${c.email?`<div class="muted">✉️ ${esc(c.email)}</div>`:''}</div>`}).join(''):'<div class="empty">Aucune cliente enregistrée.<br>Elle sera ajoutée automatiquement lors d’un nouveau rendez-vous.</div>'}</div><button class="btn" style="width:100%" onclick="newRdv()">＋ Nouveau rendez-vous</button>`}
-function clientDetail(id){let c=d.clients.find(x=>x.id===id);if(!c)return clients();let rr=d.rdv.filter(a=>a.clientId===id||a.clientName===c.name).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));app.innerHTML=`<div class="row"><h2>${esc(c.name)}</h2><button class="btn btn2" onclick="clients()">Retour</button></div><div class="card"><div class="info-grid"><div class="info-box"><b>📞 Téléphone</b><span>${esc(c.phone||'Non renseigné')}</span></div><div class="info-box"><b>✉️ E-mail</b><span>${esc(c.email||'Non renseigné')}</span></div></div><div class="info-box" style="margin-top:8px"><b>📝 Notes</b><span>${esc(c.note||'Aucune note')}</span></div></div><h3>Historique des rendez-vous</h3>${rr.length?rr.map(card).join(''):'<div class="card empty">Aucun rendez-vous.</div>'}`}
-function budget(){active('budget');let ca=d.rdv.reduce((s,x)=>s+(x.status==='Annulé'?0:+x.price),0),dep=d.depenses.reduce((s,x)=>s+ +x.m,0);app.innerHTML=`<h2>Budget</h2><div class="card"><div class="muted">Recettes</div><div style="font-size:25px;font-weight:800">${money(ca)}</div><div class="muted">Dépenses : ${money(dep)} · Bénéfice estimé : ${money(ca-dep)}</div></div><div class="card"><h3>Ajouter une dépense</h3><input id="dn" placeholder="Ex. mèches, gel, matériel"><input id="dm" type="number" placeholder="Montant €"><button class="btn" onclick="addDep()">Ajouter</button></div>`}function addDep(){if(!dn.value||!dm.value)return;d.depenses.push({n:dn.value,m:+dm.value});save();budget()}
-show('home');if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
-</script></body></html>
+const KEY="csn_v7_data";
+const services=["Knotless medium","Knotless fin épaule","Vanille twist épaule","Fulani twist épaule","Nattes collées"];
+let data=JSON.parse(localStorage.getItem(KEY)||'{"appointments":[],"clients":[]}');
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function euro(n){return (Number(n)||0).toFixed(2).replace(".",",")+" €"}
+function isoToday(){let d=new Date();return d.toISOString().slice(0,10)}
+function frDate(s){if(!s)return "";let [y,m,d]=s.split("-");return `${d}/${m}/${y}`}
+function clientKey(first,last){return (first+" "+last).trim().toLowerCase().replace(/\s+/g," ")}
+function getClient(key){return data.clients.find(c=>c.key===key)}
+function upsertClient(c){
+ let old=getClient(c.key);
+ if(old){Object.assign(old,c)}
+ else data.clients.push(c);
+ save();
+}
+function nav(tab){location.hash=tab}
+function currentTab(){return location.hash.replace("#","")||"home"}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.tab));
+window.addEventListener("hashchange",render);
+
+function render(){
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
+ const t=currentTab();
+ if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else homePage();
+}
+function homePage(){
+ const today=isoToday(), todayA=data.appointments.filter(a=>a.date===today);
+ const month=new Date().toISOString().slice(0,7);
+ const income=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé").reduce((s,a)=>s+Number(a.price||0),0);
+ app.innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
+ <div class="row" style="margin-top:15px"><div><b>${todayA.length}</b><div class="small">RDV aujourd'hui</div></div><div><b>${euro(income)}</b><div class="small">CA du mois</div></div></div></div>
+ <div class="card"><h2>Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
+ <button onclick="newAppointment()">＋ Ajouter un rendez-vous</button>`;
+}
+function apptHTML(a){
+ return `<div class="appt"><div><b>${esc(a.time)} · ${esc(a.clientName)}</b> <span class="badge">${esc(a.status)}</span></div><div class="small">${frDate(a.date)} · ${esc(a.service)} · ${euro(a.price)}</div>
+ ${a.phone?`<div class="small">📞 ${esc(a.phone)}</div>`:""}</div>`
+}
+let calDate=new Date();
+function appointmentsPage(){
+ const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),start=(first.getDay()+6)%7;
+ const names=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+ let cells=names.map(x=>`<div class="dow">${x}</div>`).join("");
+ for(let i=0;i<start;i++)cells+='<div class="day empty"></div>';
+ for(let d=1;d<=days;d++){
+   let ds=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+   let count=data.appointments.filter(a=>a.date===ds&&a.status!=="Annulé").length;
+   cells+=`<button class="day ${ds===isoToday()?"today":""}" onclick="selectedDay='${ds}';appointmentsPage()">${d}${count?` <span class="dot"></span>`:""}</button>`;
+ }
+ let selected=window.selectedDay||isoToday();
+ let list=data.appointments.filter(a=>a.date===selected).sort((a,b)=>a.time.localeCompare(b.time));
+ app.innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
+ <div class="cal">${cells}</div></div>
+ <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
+ ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button></div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>`;
+}
+function newAppointment(date=isoToday(),existing=null){
+ const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:""};
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
+ <label>Prénom</label><input id="first" value="${esc(a.firstName)}" placeholder="Prénom">
+ <label>Nom</label><input id="last" value="${esc(a.lastName)}" placeholder="Nom">
+ <label>📞 Téléphone</label><input id="phone" type="tel" value="${esc(a.phone)}" placeholder="06 00 00 00 00">
+ <label>📧 E-mail</label><input id="email" type="email" value="${esc(a.email)}" placeholder="cliente@email.com">
+ <label>📝 Notes sur la cliente</label><textarea id="clientNotes" placeholder="Préférences, habitudes, informations utiles...">${esc(a.clientNotes)}</textarea>
+ <label>Prestation</label><select id="service">${services.map(s=>`<option ${s===a.service?"selected":""}>${esc(s)}</option>`).join("")}</select>
+ <div class="row"><div><label>Date</label><input id="date" type="date" value="${a.date}"></div><div><label>Heure</label><input id="time" type="time" value="${a.time}"></div></div>
+ <div class="row"><div><label>Prix (€)</label><input id="price" type="number" step="0.01" value="${a.price}"></div><div><label>Acompte (€)</label><input id="deposit" type="number" step="0.01" value="${a.deposit}"></div></div>
+ <label>Statut</label><select id="status"><option ${a.status==="Confirmé"?"selected":""}>Confirmé</option><option ${a.status==="En attente"?"selected":""}>En attente</option><option ${a.status==="Annulé"?"selected":""}>Annulé</option></select>
+ <label>Notes du rendez-vous</label><textarea id="notes" placeholder="Mèches, longueur, modèle...">${esc(a.notes)}</textarea>
+ <button style="width:100%;margin-top:12px" onclick="saveAppointment('${a.id}',${!!existing})">Enregistrer le rendez-vous</button></div>`;
+ window.scrollTo(0,0);
+}
+function saveAppointment(id,isEdit){
+ const first=firstEl("first").value.trim(),last=firstEl("last").value.trim();
+ if(!first&&!last){alert("Ajoute au moins le prénom ou le nom de la cliente.");return}
+ const ckey=clientKey(first,last), old=data.appointments.find(x=>x.id===id);
+ const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
+ const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.time===a.time&&x.status!=="Annulé");
+ if(conflict&&!confirm("Un autre rendez-vous est déjà prévu à cette heure. Enregistrer quand même ?"))return;
+ if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
+ upsertClient({key:ckey,name:a.clientName,firstName:first,lastName:last,phone:a.phone,email:a.email,notes:a.clientNotes});
+ save(); location.hash="appointments"; selectedDay=a.date; render();
+}
+function firstEl(id){return document.getElementById(id)}
+function editAppointment(id){let a=data.appointments.find(x=>x.id===id);if(a)newAppointment(a.date,a)}
+function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a)a.status="Annulé";save();render()}}
+function clientsPage(){
+ const clients=[...data.clients].sort((a,b)=>a.name.localeCompare(b.name));
+ app.innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
+ ${clients.map(c=>`<div class="card client-card"><div><div class="client-name">${esc(c.name)}</div><div class="small">${esc(c.phone||"Téléphone non renseigné")}</div><div class="small">${esc(c.email||"E-mail non renseigné")}</div></div><button onclick="clientProfile('${encodeURIComponent(c.key)}')">Voir</button></div>`).join("")||'<div class="card emptymsg">Aucune cliente pour le moment.</div>'}`;
+}
+function clientProfile(enc){
+ const key=decodeURIComponent(enc),c=getClient(key),aps=data.appointments.filter(a=>a.clientKey===key).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ if(!c)return clientsPage();
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${esc(c.name)}</h2><button class="secondary" onclick="clientsPage()">Retour</button></div>
+ <div class="small">📞 ${esc(c.phone||"Non renseigné")}</div>
+ ${c.phone?`<div class="actions" style="margin-top:12px"><a class="link" href="tel:${esc(c.phone)}">📞 Appeler</a>${wa(c.phone)?`<a class="link" href="${wa(c.phone)}" target="_blank">💬 WhatsApp</a>`:""}</div>`:""}
+ <div class="small" style="margin-top:10px">📧 ${esc(c.email||"Non renseigné")}</div>
+ <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+ <b>Notes cliente</b><p class="sub">${esc(c.notes||"Aucune note.")}</p></div>
+ <div class="card"><h2>Historique</h2>${aps.map(apptHTML).join("")||'<div class="emptymsg">Aucun rendez-vous.</div>'}</div>`;
+}
+function wa(phone){let p=(phone||"").replace(/[^\d+]/g,"");if(p.startsWith("0"))p="33"+p.slice(1);if(p.startsWith("+"))p=p.slice(1);return /^33\d{9}$/.test(p)?`https://wa.me/${p}`:""}
+function budgetPage(){
+ const month=new Date().toISOString().slice(0,7), arr=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé");
+ const ca=arr.reduce((s,a)=>s+Number(a.price||0),0), dep=arr.reduce((s,a)=>s+Number(a.deposit||0),0), sol=ca-dep;
+ app.innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
+ <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
+}
+render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body></html>
