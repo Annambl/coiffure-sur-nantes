@@ -141,7 +141,31 @@ function clientProfile(enc){
  <div class="small" style="margin-top:10px">📧 ${esc(c.email||"Non renseigné")}</div>
  <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
  <b>Notes cliente</b><p class="sub">${esc(c.notes||"Aucune note.")}</p></div>
- <div class="card"><h2>Historique</h2>${aps.map(apptHTML).join("")||'<div class="emptymsg">Aucun rendez-vous.</div>'}</div>`;
+ const validAps=aps.filter(a=>a.status!=="Annulé");
+ const ca=validAps.reduce((s,a)=>s+Number(a.price||0),0);
+ const deposits=validAps.reduce((s,a)=>s+Number(a.deposit||0),0);
+ const balance=ca-deposits;
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${esc(c.name)}</h2><button class="secondary" onclick="clientsPage()">Retour</button></div>
+ <div class="small">📞 ${esc(c.phone||"Non renseigné")}</div>
+ ${c.phone?`<div class="actions" style="margin-top:12px"><a class="link" href="tel:${esc(c.phone)}">📞 Appeler</a>${wa(c.phone)?`<a class="link" href="${wa(c.phone)}" target="_blank">💬 WhatsApp</a>`:""}</div>`:""}
+ <div class="small" style="margin-top:10px">📧 ${esc(c.email||"Non renseigné")}</div>
+ <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+ <b>Notes cliente</b><p class="sub">${esc(c.notes||"Aucune note.")}</p>
+ <div class="row" style="margin-top:16px"><div><b>${aps.length}</b><div class="small">Rendez-vous</div></div><div><b>${euro(ca)}</b><div class="small">CA cliente</div></div></div>
+ <div class="row" style="margin-top:16px"><div><b>${euro(deposits)}</b><div class="small">Acomptes</div></div><div><b>${euro(balance)}</b><div class="small">Soldes à encaisser</div></div></div>
+ <button class="danger" style="width:100%;margin-top:20px" onclick="deleteClient('${encodeURIComponent(c.key)}')">🗑️ Supprimer cette cliente</button>
+ </div>
+ <div class="card"><h2>Historique complet</h2>${aps.map(apptHTML).join("")||'<div class="emptymsg">Aucun rendez-vous.</div>'}</div>`;
+}
+function deleteClient(enc){
+ const key=decodeURIComponent(enc), c=getClient(key);
+ if(!c)return;
+ const count=data.appointments.filter(a=>a.clientKey===key).length;
+ const msg=count?`Supprimer ${c.name} ? Cela supprimera aussi ses ${count} rendez-vous de l'application.`:`Supprimer ${c.name} ?`;
+ if(!confirm(msg))return;
+ data.clients=data.clients.filter(x=>x.key!==key);
+ data.appointments=data.appointments.filter(a=>a.clientKey!==key);
+ save(); location.hash="clients"; render();
 }
 function wa(phone){let p=(phone||"").replace(/[^\d+]/g,"");if(p.startsWith("0"))p="33"+p.slice(1);if(p.startsWith("+"))p=p.slice(1);return /^33\d{9}$/.test(p)?`https://wa.me/${p}`:""}
 function budgetPage(){
