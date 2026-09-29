@@ -17,7 +17,7 @@ button.secondary{background:var(--rose2);color:#714652}button.danger{background:
 input,select,textarea{width:100%;padding:15px 16px;border:1px solid #ddd5d8;border-radius:15px;background:#fff;font-size:16px;color:var(--ink)}
 textarea{min-height:88px;resize:vertical}label{display:block;font-weight:700;margin:15px 0 7px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(4,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(5,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
 nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;font-size:13px;border-radius:12px}nav button.active{color:var(--rose);font-weight:800}
 .navicon{display:block;font-size:23px;line-height:25px}.hidden{display:none!important}
 .calendar-head{display:flex;justify-content:space-between;align-items:center}.month{font-weight:800;font-size:19px}
@@ -38,6 +38,7 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 <button data-tab="appointments"><span class="navicon">📅</span>Rendez-vous</button>
 <button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
 <button data-tab="budget"><span class="navicon">💰</span>Budget</button>
+<button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
 </nav>
 <script>
 const KEY="csn_v7_data";
@@ -112,7 +113,7 @@ window.addEventListener("hashchange",render);
 function render(){
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
  const t=currentTab();
- if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else homePage();
+ if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else homePage();
 }
 function homePage(){
  const today=isoToday(), todayA=data.appointments.filter(a=>a.date===today);
@@ -156,7 +157,7 @@ function appointmentsPage(){
  <div class="cal">${cells}</div></div>
  <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
  ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="small">🔔 ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant"}</div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 WhatsApp</a>`:""}</div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>
- <div class="card"><h2>🔔 Prochains rappels</h2>${upcoming.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Aucun rappel":"Rappel 24 h avant"}</div>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Confirmer sur WhatsApp</a>`:""}</div>`).join("")||'<div class="emptymsg">Aucun prochain rendez-vous.</div>'}</div>`;
+ <div class="card"><div class="calendar-head"><h2>🔔 Prochains rappels</h2><button class="secondary" onclick="nav('reminders')">Voir tout</button></div>${upcoming.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Aucun rappel":"Rappel 24 h avant"}</div>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Confirmer sur WhatsApp</a>`:""}</div>`).join("")||'<div class="emptymsg">Aucun prochain rendez-vous.</div>'}</div>`;
 }
 function newAppointment(date=isoToday(),existing=null){
  const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
@@ -229,6 +230,56 @@ function deleteClient(enc){
  save(); location.hash="clients"; render();
 }
 function wa(phone){let p=(phone||"").replace(/[^\d+]/g,"");if(p.startsWith("0"))p="33"+p.slice(1);if(p.startsWith("+"))p=p.slice(1);return /^33\d{9}$/.test(p)?`https://wa.me/${p}`:""}
+function reminderLabel(a){
+  return a.reminder==="2h"?"2 h avant":a.reminder==="none"?"Aucun rappel":"24 h avant";
+}
+function appointmentMoment(a){
+  if(!a.date||!a.time)return null;
+  const [y,m,d]=a.date.split("-").map(Number), [hh,mm]=a.time.split(":").map(Number);
+  return new Date(y,m-1,d,hh,mm);
+}
+function remindersPage(){
+  const now=new Date();
+  const upcoming=data.appointments
+    .filter(a=>a.status!=="Annulé" && a.reminder!=="none")
+    .map(a=>({a,dt:appointmentMoment(a)}))
+    .filter(x=>x.dt && x.dt.getTime()>now.getTime()-86400000)
+    .sort((x,y)=>x.dt-y.dt);
+
+  const due=upcoming.filter(x=>{
+    const offset=x.a.reminder==="2h"?2:24;
+    const reminderAt=x.dt.getTime()-offset*3600000;
+    return reminderAt<=now.getTime() && x.dt.getTime()>now.getTime();
+  });
+
+  app.innerHTML=`<div class="card"><h2>🔔 Rappels</h2>
+    <div class="sub">Les rappels enregistrés pour tes rendez-vous.</div>
+    <button style="margin-top:14px" onclick="requestNotifications()">🔔 Activer les notifications</button>
+    <div class="small" style="margin-top:10px">Sur Android, une notification locale peut être affichée lorsque l'application est ouverte. Pour des notifications fiables même quand l'application est complètement fermée, il faudra plus tard connecter un service de notifications.</div>
+  </div>
+  ${due.length?`<div class="card"><h2>⚠️ À rappeler maintenant</h2>${due.map(x=>reminderCard(x.a,true)).join("")}</div>`:""}
+  <div class="card"><h2>📅 Prochains rappels</h2>
+    ${upcoming.map(x=>reminderCard(x.a,false)).join("")||'<div class="emptymsg">Aucun rappel programmé.</div>'}
+  </div>`;
+}
+function reminderCard(a,due){
+  return `<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b>
+  <div class="small">${esc(a.service)} · 🔔 ${reminderLabel(a)}</div>
+  ${due?'<span class="badge">Rappel à envoyer</span>':""}
+  <div class="actions" style="margin-top:8px">
+  ${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer sur WhatsApp</a>`:""}
+  <button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button>
+  </div></div>`;
+}
+async function requestNotifications(){
+  if(!("Notification" in window)){alert("Les notifications ne sont pas prises en charge par ce navigateur.");return;}
+  const p=await Notification.requestPermission();
+  if(p==="granted"){
+    new Notification("Coiffure sur Nantes",{body:"Les notifications sont activées pour cette session."});
+  }else{
+    alert("Les notifications n'ont pas été autorisées.");
+  }
+}
 function budgetPage(){
  const month=new Date().toISOString().slice(0,7), arr=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé");
  const ca=arr.reduce((s,a)=>s+Number(a.price||0),0), dep=arr.reduce((s,a)=>s+Number(a.deposit||0),0), sol=ca-dep;
