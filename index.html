@@ -95,7 +95,10 @@ let data=loadData();
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function euro(n){return (Number(n)||0).toFixed(2).replace(".",",")+" €"}
-function isoToday(){let d=new Date();return d.toISOString().slice(0,10)}
+function isoToday(){
+ let d=new Date();
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
 function frDate(s){if(!s)return "";let [y,m,d]=s.split("-");return `${d}/${m}/${y}`}
 function clientKey(first,last){return (first+" "+last).trim().toLowerCase().replace(/\s+/g," ")}
 function getClient(key){return data.clients.find(c=>c.key===key)}
@@ -140,6 +143,7 @@ function waConfirm(a){
  return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
 }
 let calDate=new Date();
+window.selectedDay=isoToday();
 function appointmentsPage(){
  const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),start=(first.getDay()+6)%7;
  const names=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
