@@ -70,7 +70,7 @@ function loadData(){
     }
     const clientName=(first+" "+last).trim()||name;
     const key=(a.clientKey||clientName).toLowerCase().replace(/\s+/g," ").trim();
-    return {...a,clientName,firstName:first,lastName:last,phone:a.phone||"",email:a.email||"",clientNotes:a.clientNotes||"",clientKey:key};
+    return {...a,clientName,firstName:first,lastName:last,phone:a.phone||"",email:a.email||"",clientNotes:a.clientNotes||"",reminder:a.reminder||"24h",clientKey:key};
   });
 
   // Rebuild/complete the client list from appointments without losing existing data.
@@ -120,12 +120,23 @@ function homePage(){
  const income=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé").reduce((s,a)=>s+Number(a.price||0),0);
  app.innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
  <div class="row" style="margin-top:15px"><div><b>${todayA.length}</b><div class="small">RDV aujourd'hui</div></div><div><b>${euro(income)}</b><div class="small">CA du mois</div></div></div></div>
- <div class="card"><h2>Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
+ <div class="card"><h2>🔔 Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
  <button onclick="newAppointment()">＋ Ajouter un rendez-vous</button>`;
 }
 function apptHTML(a){
- return `<div class="appt"><div><b>${esc(a.time)} · ${esc(a.clientName)}</b> <span class="badge">${esc(a.status)}</span></div><div class="small">${frDate(a.date)} · ${esc(a.service)} · ${euro(a.price)}</div>
- ${a.phone?`<div class="small">📞 ${esc(a.phone)}</div>`:""}</div>`
+ const reminderText=a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant";
+ return `<div class="appt"><div><b>${esc(a.time)} · ${esc(a.clientName)}</b> <span class="badge">${esc(a.status)}</span></div>
+ <div class="small">${frDate(a.date)} · ${esc(a.service)} · ${euro(a.price)}</div>
+ ${a.phone?`<div class="small">📞 ${esc(a.phone)}</div>`:""}
+ <div class="small">🔔 ${reminderText}</div>
+ ${a.phone&&wa(a.phone)?`<div class="actions" style="margin-top:8px"><a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer confirmation WhatsApp</a></div>`:""}
+ </div>`
+}
+function waConfirm(a){
+ const p=(a.phone||"").replace(/[^\d+]/g,"");
+ let n=p.startsWith("0")?"33"+p.slice(1):p.startsWith("+")?p.slice(1):p;
+ const msg=`Bonjour ${a.firstName||a.clientName}, je vous confirme votre rendez-vous le ${frDate(a.date)} à ${a.time} pour ${a.service} chez Coiffure sur Nantes. Prix : ${euro(a.price)}. Acompte : ${euro(a.deposit)}. À bientôt 😊`;
+ return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
 }
 let calDate=new Date();
 function appointmentsPage(){
@@ -140,13 +151,15 @@ function appointmentsPage(){
  }
  let selected=window.selectedDay||isoToday();
  let list=data.appointments.filter(a=>a.date===selected).sort((a,b)=>a.time.localeCompare(b.time));
+ let upcoming=data.appointments.filter(a=>a.date>=isoToday()&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
  app.innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
  <div class="cal">${cells}</div></div>
  <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
- ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button></div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>`;
+ ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="small">🔔 ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant"}</div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 WhatsApp</a>`:""}</div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>
+ <div class="card"><h2>🔔 Prochains rappels</h2>${upcoming.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Aucun rappel":"Rappel 24 h avant"}</div>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Confirmer sur WhatsApp</a>`:""}</div>`).join("")||'<div class="emptymsg">Aucun prochain rendez-vous.</div>'}</div>`;
 }
 function newAppointment(date=isoToday(),existing=null){
- const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:""};
+ const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
  app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
  <label>Prénom</label><input id="first" value="${esc(a.firstName)}" placeholder="Prénom">
  <label>Nom</label><input id="last" value="${esc(a.lastName)}" placeholder="Nom">
@@ -157,6 +170,11 @@ function newAppointment(date=isoToday(),existing=null){
  <div class="row"><div><label>Date</label><input id="date" type="date" value="${a.date}"></div><div><label>Heure</label><input id="time" type="time" value="${a.time}"></div></div>
  <div class="row"><div><label>Prix (€)</label><input id="price" type="number" step="0.01" value="${a.price}"></div><div><label>Acompte (€)</label><input id="deposit" type="number" step="0.01" value="${a.deposit}"></div></div>
  <label>Statut</label><select id="status"><option ${a.status==="Confirmé"?"selected":""}>Confirmé</option><option ${a.status==="En attente"?"selected":""}>En attente</option><option ${a.status==="Annulé"?"selected":""}>Annulé</option></select>
+ <label>🔔 Rappel</label><select id="reminder">
+   <option value="24h" ${(a.reminder||"24h")==="24h"?"selected":""}>24 h avant</option>
+   <option value="2h" ${(a.reminder||"24h")==="2h"?"selected":""}>2 h avant</option>
+   <option value="none" ${(a.reminder||"24h")==="none"?"selected":""}>Aucun rappel</option>
+ </select>
  <label>Notes du rendez-vous</label><textarea id="notes" placeholder="Mèches, longueur, modèle...">${esc(a.notes)}</textarea>
  <button style="width:100%;margin-top:12px" onclick="saveAppointment('${a.id}',${!!existing})">Enregistrer le rendez-vous</button></div>`;
  window.scrollTo(0,0);
@@ -165,7 +183,7 @@ function saveAppointment(id,isEdit){
  const first=firstEl("first").value.trim(),last=firstEl("last").value.trim();
  if(!first&&!last){alert("Ajoute au moins le prénom ou le nom de la cliente.");return}
  const ckey=clientKey(first,last), old=data.appointments.find(x=>x.id===id);
- const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
+ const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,reminder:firstEl("reminder").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
  const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.time===a.time&&x.status!=="Annulé");
  if(conflict&&!confirm("Un autre rendez-vous est déjà prévu à cette heure. Enregistrer quand même ?"))return;
  if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
