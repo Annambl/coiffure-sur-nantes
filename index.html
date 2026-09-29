@@ -41,8 +41,56 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 </nav>
 <script>
 const KEY="csn_v7_data";
+const OLD_KEY="csn_data";
 const services=["Knotless medium","Knotless fin épaule","Vanille twist épaule","Fulani twist épaule","Nattes collées"];
-let data=JSON.parse(localStorage.getItem(KEY)||'{"appointments":[],"clients":[]}');
+
+function loadData(){
+  let raw=localStorage.getItem(KEY);
+  let migrated=false;
+  if(!raw){
+    raw=localStorage.getItem(OLD_KEY);
+    migrated=!!raw;
+  }
+  let d;
+  try{ d=raw?JSON.parse(raw):{appointments:[],clients:[]}; }
+  catch(e){ d={appointments:[],clients:[]}; }
+
+  d.appointments=Array.isArray(d.appointments)?d.appointments:[];
+  d.clients=Array.isArray(d.clients)?d.clients:[];
+
+  // Upgrade older appointments to the V7 client structure.
+  d.appointments=d.appointments.map(a=>{
+    const name=(a.clientName||a.client||"").trim();
+    let first=a.firstName||"";
+    let last=a.lastName||"";
+    if(!first && !last && name){
+      const parts=name.split(/\s+/);
+      first=parts.shift()||"";
+      last=parts.join(" ");
+    }
+    const clientName=(first+" "+last).trim()||name;
+    const key=(a.clientKey||clientName).toLowerCase().replace(/\s+/g," ").trim();
+    return {...a,clientName,firstName:first,lastName:last,phone:a.phone||"",email:a.email||"",clientNotes:a.clientNotes||"",clientKey:key};
+  });
+
+  // Rebuild/complete the client list from appointments without losing existing data.
+  const byKey=new Map();
+  d.clients.forEach(c=>{
+    const name=(c.name||((c.firstName||"")+" "+(c.lastName||""))).trim();
+    const key=(c.key||name).toLowerCase().replace(/\s+/g," ").trim();
+    if(key) byKey.set(key,{...c,key,name:name||key,phone:c.phone||"",email:c.email||"",notes:c.notes||""});
+  });
+  d.appointments.forEach(a=>{
+    if(!a.clientKey)return;
+    const prev=byKey.get(a.clientKey)||{key:a.clientKey,name:a.clientName};
+    byKey.set(a.clientKey,{...prev,name:prev.name||a.clientName,firstName:prev.firstName||a.firstName,lastName:prev.lastName||a.lastName,phone:prev.phone||a.phone,email:prev.email||a.email,notes:prev.notes||a.clientNotes});
+  });
+  d.clients=Array.from(byKey.values());
+
+  if(migrated || !localStorage.getItem(KEY)) localStorage.setItem(KEY,JSON.stringify(d));
+  return d;
+}
+let data=loadData();
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function euro(n){return (Number(n)||0).toFixed(2).replace(".",",")+" €"}
@@ -140,7 +188,6 @@ function clientProfile(enc){
  ${c.phone?`<div class="actions" style="margin-top:12px"><a class="link" href="tel:${esc(c.phone)}">📞 Appeler</a>${wa(c.phone)?`<a class="link" href="${wa(c.phone)}" target="_blank">💬 WhatsApp</a>`:""}</div>`:""}
  <div class="small" style="margin-top:10px">📧 ${esc(c.email||"Non renseigné")}</div>
  <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
- <b>Notes cliente</b><p class="sub">${esc(c.notes||"Aucune note.")}</p></div>
  const validAps=aps.filter(a=>a.status!=="Annulé");
  const ca=validAps.reduce((s,a)=>s+Number(a.price||0),0);
  const deposits=validAps.reduce((s,a)=>s+Number(a.deposit||0),0);
