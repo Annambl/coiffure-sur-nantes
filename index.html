@@ -674,8 +674,34 @@ function reminderCard(a,due){
   ${due?'<span class="badge">Rappel à envoyer</span>':""}
   <div class="actions" style="margin-top:8px">
   ${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer sur WhatsApp</a>`:""}
-  <button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button>
+  <button class="secondary" onclick="editAppointment('${a.id}')">✏️ Modifier</button>
+  <button class="danger" onclick="deleteAppointment('${a.id}')">🗑️ Supprimer</button>
   </div></div>`;
+}
+async function deleteAppointment(id){
+  const a=data.appointments.find(x=>String(x.id)===String(id));
+  if(!a)return;
+  const ok=confirm(`Supprimer le rendez-vous de ${a.clientName} le ${frDate(a.date)} à ${a.time} ?\n\nCette action est définitive.`);
+  if(!ok)return;
+
+  try{
+    // For an online booking, cancel it centrally first so it does not come back
+    // during the next Supabase synchronization.
+    if(a.source==="public"){
+      await supabaseRpc("set_public_appointment_status",{
+        p_id:Number(a.id),
+        p_phone:a.phone||"",
+        p_status:"Annulé"
+      });
+    }
+
+    data.appointments=data.appointments.filter(x=>String(x.id)!==String(id));
+    save();
+    render();
+  }catch(e){
+    console.error("deleteAppointment",e);
+    alert("Le rendez-vous n'a pas pu être supprimé. Vérifiez la connexion puis réessayez.");
+  }
 }
 async function requestNotifications(){
   if(!("Notification" in window)){alert("Les notifications ne sont pas prises en charge par ce navigateur.");return;}
