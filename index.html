@@ -278,27 +278,27 @@ async function publicConfirm(){
  if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…"}
  try{
    const price=publicBooking.service.includes("Fulani")?60:50;
-   let result,error;
-   ({data:result,error}=await supabaseClient.rpc("create_public_booking",{
+   const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
+   const endAt=new Date(startAt.getTime()+60*60*1000);
+   // Use the RPC that is actually installed in Supabase for public bookings.
+   // It also enforces the rule: one active booking blocks the whole day.
+   const {data:result,error}=await supabaseClient.rpc("create_public_appointment",{
      p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
-     p_service_name:publicBooking.service,p_booking_date:publicBooking.date,p_booking_time:publicBooking.time
-   }));
-   if(error){
-     const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
-     const endAt=new Date(startAt.getTime()+60*60*1000);
-     const fallback=await supabaseClient.rpc("create_public_appointment",{
-       p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
-       p_service_name:publicBooking.service,p_service_price:price,
-       p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
-     });
-     if(fallback.error)throw error;
-     result=fallback.data;
-   }
+     p_service_name:publicBooking.service,p_service_price:price,
+     p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
+   });
+   if(error)throw error;
    const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
    publicSuccess(a);
  }catch(e){
-   console.error("create_public_booking",e);
-   if(err)err.textContent="Ce créneau vient peut-être d'être réservé. Revenez au calendrier et choisissez une autre disponibilité.";
+   console.error("create_public_appointment",e);
+   const msg=String(e?.message||e?.details||e?.hint||"");
+   if(err){
+     if(msg.includes("DAY_ALREADY_BOOKED")) err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
+     else if(msg.includes("INVALID_CONTACT")) err.textContent="Merci de vérifier vos coordonnées.";
+     else if(msg.includes("INVALID_TIME")) err.textContent="Ce créneau n'est pas valide. Revenez au calendrier et choisissez une autre disponibilité.";
+     else err.textContent="La réservation n'a pas pu être enregistrée. Revenez au calendrier et réessayez.";
+   }
    if(btn){btn.disabled=false;btn.textContent="CONFIRMER MON RENDEZ-VOUS"}
  }
 }
