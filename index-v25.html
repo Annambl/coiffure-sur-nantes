@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#bb7180">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Coiffure sur Nantes</title>
+<style>
+:root{--rose:#bb7180;--rose2:#f5e4e7;--ink:#29252a;--muted:#77727a;--bg:#fbf7f8;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:22px 22px 12px;background:var(--bg);position:sticky;top:0;z-index:5}
+h1{font-size:28px;margin:0 0 4px}h2{font-size:22px;margin:0 0 16px}.sub{color:var(--muted)}
+main{padding:10px 18px 100px}.card{background:var(--card);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 3px 18px #00000008}
+button{border:0;border-radius:15px;padding:13px 17px;background:var(--rose);color:#fff;font-weight:700;font-size:15px}
+button.secondary{background:var(--rose2);color:#714652}button.linkbtn{background:transparent;color:var(--rose);padding:8px 10px}button.danger{background:#f3dadd;color:#9b3949}
+input,select,textarea{width:100%;padding:15px 16px;border:1px solid #ddd5d8;border-radius:15px;background:#fff;font-size:16px;color:var(--ink)}
+textarea{min-height:88px;resize:vertical}label{display:block;font-weight:700;margin:15px 0 7px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(6,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;font-size:13px;border-radius:12px}nav button.active{color:var(--rose);font-weight:800}
+.navicon{display:block;font-size:23px;line-height:25px}.hidden{display:none!important}
+.calendar-head{display:flex;justify-content:space-between;align-items:center}.month{font-weight:800;font-size:19px}
+.cal{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:14px}.dow{text-align:center;font-size:11px;color:#888;padding:4px}
+.day{min-height:52px;background:#fafafa;border-radius:12px;padding:7px;text-align:left;border:1px solid #eee;color:#333}.day.empty{background:transparent;border:0}.day.today{border:2px solid var(--rose)}.day.selected{background:var(--rose2);border-color:var(--rose)}.day.unavailable{background:#f7d9de;border-color:#d96b7a;color:#9b3949;font-weight:800}.day.unavailable.today{border:2px solid #9b3949}.day.unavailable.selected{background:#efc2ca;border-color:#9b3949}
+.dot{width:6px;height:6px;background:var(--rose);border-radius:50%;display:inline-block;margin-left:3px}.appt{padding:12px 0;border-bottom:1px solid #eee}.appt:last-child{border-bottom:0}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--rose2);color:#744651;font-size:12px;font-weight:700}
+.client-card{display:flex;justify-content:space-between;gap:12px;align-items:center}.client-name{font-weight:800;font-size:17px}.small{font-size:13px;color:var(--muted)}
+.emptymsg{color:#777;text-align:center;padding:25px 5px}
+a.link{color:var(--rose);font-weight:700;text-decoration:none}
+
+.public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
+
+.public-cal{margin-top:12px}.public-cal .day{min-height:42px}.public-cal .day:not(.unavailable){background:#eef8ef;color:#39734a}.public-cal .day.unavailable{background:#f7dfe2;color:#a33a4b;cursor:not-allowed}.public-cal .day.selected{outline:2px solid #9b5264;outline-offset:-2px}.public-cal .day.today{font-weight:800}.public-cal .day.empty{background:transparent}
+</style>
+</head>
+<body>
+<div id="shell">
+<header><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></header>
+<main id="app"></main>
+<nav>
+<button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
+<button data-tab="appointments"><span class="navicon">📅</span>Rendez-vous</button>
+<button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
+<button data-tab="budget"><span class="navicon">💰</span>Budget</button>
+<button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
+</nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://kaunnovtcujfgktyxzgji.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_A2gCiij_BTERARnkOSPj4Q_lZktqbeA";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let authSession=null;
+let authLoading=true;
+
+const ADMIN_SHELL=`<header><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></header>
+<main id="app"></main>
+<nav>
+<button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
+<button data-tab="appointments"><span class="navicon">📅</span>Rendez-vous</button>
+<button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
+<button data-tab="budget"><span class="navicon">💰</span>Budget</button>
+<button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
+<button data-tab="account"><span class="navicon">🔐</span>Compte</button>
+</nav>`;
+
+const KEY="csn_v7_data";
+const OLD_KEY="csn_data";
+const services=["Knotless medium","Knotless fin épaule","Vanille twist épaule","Fulani twist épaule","Nattes collées"];
+
+function loadData(){
+  let raw=localStorage.getItem(KEY);
+  let migrated=false;
+  if(!raw){
+    raw=localStorage.getItem(OLD_KEY);
+    migrated=!!raw;
+  }
+  let d;
+  try{ d=raw?JSON.parse(raw):{appointments:[],clients:[]}; }
+  catch(e){ d={appointments:[],clients:[]}; }
+
+  d.appointments=Array.isArray(d.appointments)?d.appointments:[];
+  d.clients=Array.isArray(d.clients)?d.clients:[];
+
+  // Upgrade older appointments to the V7 client structure.
+  d.appointments=d.appointments.map(a=>{
+    const name=(a.clientName||a.client||"").trim();
+    let first=a.firstName||"";
+    let last=a.lastName||"";
+    if(!first && !last && name){
+      const parts=name.split(/\s+/);
+      first=parts.shift()||"";
+      last=parts.join(" ");
+    }
+    const clientName=(first+" "+last).trim()||name;
+    const key=(a.clientKey||clientName).toLowerCase().replace(/\s+/g," ").trim();
+    return {...a,clientName,firstName:first,lastName:last,phone:a.phone||"",email:a.email||"",clientNotes:a.clientNotes||"",reminder:a.reminder||"24h",clientKey:key};
+  });
+
+  // Rebuild/complete the client list from appointments without losing existing data.
+  const byKey=new Map();
+  d.clients.forEach(c=>{
+    const name=(c.name||((c.firstName||"")+" "+(c.lastName||""))).trim();
+    const key=(c.key||name).toLowerCase().replace(/\s+/g," ").trim();
+    if(key) byKey.set(key,{...c,key,name:name||key,phone:c.phone||"",email:c.email||"",notes:c.notes||""});
+  });
+  d.appointments.forEach(a=>{
+    if(!a.clientKey)return;
+    const prev=byKey.get(a.clientKey)||{key:a.clientKey,name:a.clientName};
+    byKey.set(a.clientKey,{...prev,name:prev.name||a.clientName,firstName:prev.firstName||a.firstName,lastName:prev.lastName||a.lastName,phone:prev.phone||a.phone,email:prev.email||a.email,notes:prev.notes||a.clientNotes});
+  });
+  d.clients=Array.from(byKey.values());
+
+  if(migrated || !localStorage.getItem(KEY)) localStorage.setItem(KEY,JSON.stringify(d));
+  return d;
+}
+let data=loadData();
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function euro(n){return (Number(n)||0).toFixed(2).replace(".",",")+" €"}
+function isoToday(){
+ let d=new Date();
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function frDate(s){if(!s)return "";let [y,m,d]=s.split("-");return `${d}/${m}/${y}`}
+function clientKey(first,last){return (first+" "+last).trim().toLowerCase().replace(/\s+/g," ")}
+function getClient(key){return data.clients.find(c=>c.key===key)}
+function upsertClient(c){
+ let old=getClient(c.key);
+ if(old){Object.assign(old,c)}
+ else data.clients.push(c);
+ save();
+}
+function nav(tab){location.hash=tab}
+function currentTab(){return location.hash.replace("#","")||"home"}
+function bindNav(){
+  document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.tab));
+}
+function restoreAdminShell(){
+  document.getElementById("shell").innerHTML=ADMIN_SHELL;
+  bindNav();
+}
+function showLoginPage(message=""){
+  document.body.className="";
+  document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
+    <div class="card" style="margin-top:40px">
+      <div class="lock">🔐</div>
+      <h2 style="text-align:center">Espace professionnel</h2>
+      <div class="sub" style="text-align:center">Connectez-vous pour accéder à votre agenda, vos clientes et votre budget.</div>
+      <label>Adresse e-mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.com">
+      <label>Mot de passe</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
+      <div id="loginError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
+      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithSupabase()">SE CONNECTER</button>
+      <button class="linkbtn" style="width:100%;margin-top:10px" onclick="showForgotPage()">Mot de passe oublié ?</button>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="location.hash='#book';render()">← Retour à la prise de rendez-vous</button>
+    </div>
+  </main>`;
+}
+function showForgotPage(message=""){
+  document.body.className="";
+  document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
+    <div class="card" style="margin-top:40px">
+      <div class="lock">🔑</div>
+      <h2 style="text-align:center">Mot de passe oublié ?</h2>
+      <div class="sub" style="text-align:center">Entrez votre adresse e-mail. Nous vous enverrons un lien pour créer un nouveau mot de passe.</div>
+      <label>Adresse e-mail</label>
+      <input id="resetEmail" type="email" autocomplete="email" placeholder="votre@email.com">
+      <div id="resetError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
+      <button id="resetBtn" style="width:100%;margin-top:14px" onclick="sendPasswordReset()">ENVOYER LE LIEN</button>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="location.hash='#admin';render()">← Retour à la connexion</button>
+    </div>
+  </main>`;
+  const loginEmail=document.getElementById("loginEmail");
+  const resetEmail=document.getElementById("resetEmail");
+  if(loginEmail && resetEmail) resetEmail.value=loginEmail.value;
+}
+async function sendPasswordReset(){
+  const email=document.getElementById("resetEmail")?.value.trim();
+  const err=document.getElementById("resetError");
+  const btn=document.getElementById("resetBtn");
+  if(!email){if(err)err.textContent="Renseignez votre adresse e-mail.";return;}
+  if(btn){btn.disabled=true;btn.textContent="ENVOI…";}
+  const redirectTo=window.location.origin+window.location.pathname;
+  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){
+    const msg=(error.message||"").toLowerCase();
+    let friendly=error.message||"Impossible d'envoyer l'e-mail. Réessayez plus tard.";
+    if(error.status===429 || msg.includes("rate limit") || msg.includes("too many")){
+      friendly="Trop de demandes de réinitialisation ont été envoyées. Avec l’e-mail intégré de Supabase, la limite est de 2 e-mails par heure. Attendez un peu puis réessayez.";
+    }else if(msg.includes("failed to fetch")){
+      friendly="Connexion à Supabase impossible pour le moment. Vérifiez votre connexion Internet puis réessayez.";
+    }else if(msg.includes("redirect") || msg.includes("url")){
+      friendly="L’adresse de retour n’est pas encore autorisée dans Supabase. Vérifiez les URL de redirection du projet.";
+    }
+    if(err)err.textContent=friendly;
+    if(btn){btn.disabled=false;btn.textContent="ENVOYER LE LIEN";}
+    return;
+  }
+  if(err){err.style.color="#39734a";err.textContent="Si cette adresse correspond à votre compte, un e-mail de réinitialisation vient d'être envoyé. Vérifiez votre boîte mail.";}
+  if(btn){btn.disabled=true;btn.textContent="LIEN ENVOYÉ ✓";}
+}
+function showResetPasswordPage(message=""){
+  document.body.className="";
+  document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
+    <div class="card" style="margin-top:40px">
+      <div class="lock">🔐</div>
+      <h2 style="text-align:center">Créer un nouveau mot de passe</h2>
+      <div class="sub" style="text-align:center">Choisissez votre nouveau mot de passe pour accéder à votre espace professionnel.</div>
+      <label>Nouveau mot de passe</label>
+      <input id="newPassword" type="password" autocomplete="new-password" placeholder="Au moins 8 caractères">
+      <label>Confirmer le mot de passe</label>
+      <input id="newPassword2" type="password" autocomplete="new-password" placeholder="Retapez votre mot de passe">
+      <div id="newPasswordError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
+      <button id="updatePasswordBtn" style="width:100%;margin-top:14px" onclick="updatePassword()">ENREGISTRER LE NOUVEAU MOT DE PASSE</button>
+    </div>
+  </main>`;
+}
+async function updatePassword(){
+  const p1=document.getElementById("newPassword")?.value||"";
+  const p2=document.getElementById("newPassword2")?.value||"";
+  const err=document.getElementById("newPasswordError");
+  const btn=document.getElementById("updatePasswordBtn");
+  if(p1.length<8){if(err)err.textContent="Le mot de passe doit contenir au moins 8 caractères.";return;}
+  if(p1!==p2){if(err)err.textContent="Les deux mots de passe ne correspondent pas.";return;}
+  if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…";}
+  const {error}=await supabaseClient.auth.updateUser({password:p1});
+  if(error){
+    if(err)err.textContent=error.message||"Impossible de modifier le mot de passe.";
+    if(btn){btn.disabled=false;btn.textContent="ENREGISTRER LE NOUVEAU MOT DE PASSE";}
+    return;
+  }
+  await supabaseClient.auth.signOut();
+  authSession=null;
+  history.replaceState({},document.title,window.location.pathname);
+  location.hash="#admin";
+  showLoginPage("Mot de passe modifié. Vous pouvez maintenant vous connecter.");
+}
+async function loginWithSupabase(){
+  const email=document.getElementById("loginEmail")?.value.trim();
+  const password=document.getElementById("loginPassword")?.value;
+  const err=document.getElementById("loginError");
+  const btn=document.getElementById("loginBtn");
+  if(!email||!password){if(err)err.textContent="Renseignez votre e-mail et votre mot de passe.";return;}
+  if(btn){btn.disabled=true;btn.textContent="CONNEXION…";}
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+    if(err)err.textContent="E-mail ou mot de passe incorrect.";
+    if(btn){btn.disabled=false;btn.textContent="SE CONNECTER";}
+    return;
+  }
+  authSession=data.session;
+  location.hash="#home";
+  restoreAdminShell();
+  render();
+}
+async function logoutProfessional(){
+  await supabaseClient.auth.signOut();
+  authSession=null;
+  location.hash="#admin";
+  showLoginPage();
+}
+window.addEventListener("hashchange",render);
+
+function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
+function isRecoveryFlow(){
+  const params=new URLSearchParams(window.location.search);
+  return params.get("reset")==="1" || window.location.hash.includes("type=recovery") || window.location.hash.includes("access_token=");
+}
+function publicHome(){
+ document.body.className="public";
+ document.getElementById("shell").innerHTML=`<header><div class="public-logo">💇🏾‍♀️</div><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
+}
+let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
+function publicStep1(){
+ document.body.className="public";
+ const list=services.map((sv,i)=>`<div class="card choice"><div><b>${esc(sv)}</b><div class="small">Choisir cette prestation</div></div><button onclick="publicChooseService(${i})">Choisir</button></div>`).join("");
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre prestation</div><div class="public-sub">Coiffure sur Nantes</div></header><main id="app">${list}<button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">← Retour</button></main>`;
+}
+function publicChooseService(i){publicBooking.service=services[i];publicBooking.time="";publicStep2()}
+function publicCalendarMonth(y,m){
+ const first=new Date(y,m,1), days=new Date(y,m+1,0).getDate();
+ const start=(first.getDay()+6)%7;
+ const names=["Lun","Mar","Mer","Jeu","Ven","Sam"];
+ let cells=names.map(x=>`<div class="dow">${x}</div>`).join("");
+ for(let i=0;i<start;i++)cells+='<div class="day empty"></div>';
+ for(let d=1;d<=days;d++){
+   const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+   const dow=new Date(y,m,d).getDay();
+   if(dow===0)continue;
+   const state=publicAvailability[ds]||"loading";
+   const cls=`day ${ds===isoToday()?"today":""} ${ds===publicBooking.date?"selected":""} ${state==="booked"?"unavailable":""}`;
+   cells+=`<button class="${cls}" ${state==="booked"?"disabled":""} onclick="publicSelectDate('${ds}')" title="${state==='booked'?'Réservé':'Disponible'}">${d}</button>`;
+ }
+ return `<div class="cal public-cal">${cells}</div>`;
+}
+let publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let publicAvailability={};
+async function publicStep2(){
+ publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+ const today=isoToday();
+ if(isSunday(publicBooking.date)||!publicBooking.date) publicBooking.date="";
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre date</div><div class="public-sub">${esc(publicBooking.service)}</div></header><main id="app">
+ <div class="card"><div class="calendar-head"><button class="secondary" onclick="publicChangeMonth(-1)">‹</button><div id="publicMonth" class="month"></div><button class="secondary" onclick="publicChangeMonth(1)">›</button></div>${publicCalendarMonth(publicCalendarCursor.getFullYear(),publicCalendarCursor.getMonth())}</div>
+ <div class="small" style="margin:0 4px 10px">🟢 Disponible &nbsp; 🔴 Réservé</div>
+ <div id="pubslots"></div>
+ <button class="secondary" style="width:100%;margin-top:10px" onclick="publicStep1()">← Retour</button></main>`;
+ await publicLoadAvailability();
+}
+async function publicChangeMonth(delta){
+ publicCalendarCursor.setMonth(publicCalendarCursor.getMonth()+delta);
+ publicRenderCalendar();
+ await publicLoadAvailability();
+}
+function publicRenderCalendar(){
+ const y=publicCalendarCursor.getFullYear(),m=publicCalendarCursor.getMonth();
+ const title=new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+ const el=document.getElementById("publicMonth"); if(el)el.textContent=title.charAt(0).toUpperCase()+title.slice(1);
+ const cal=document.querySelector(".public-cal"); if(cal)cal.outerHTML=publicCalendarMonth(y,m);
+}
+async function publicLoadAvailability(){
+ const host=document.getElementById("pubslots");
+ if(host)host.innerHTML='<div class="card"><div class="emptymsg">Chargement des disponibilités…</div></div>';
+ const y=publicCalendarCursor.getFullYear(),m=publicCalendarCursor.getMonth();
+ const start=`${y}-${String(m+1).padStart(2,"0")}-01`;
+ const endDate=new Date(y,m+1,0);
+ const end=`${y}-${String(m+1).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;
+ try{
+   let {data:rows,error}=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
+   if(error){
+     const fallback=await supabaseClient.rpc("get_booked_dates",{p_from:start,p_to:end});
+     if(fallback.error)throw error;
+     rows=fallback.data||[];
+   }
+   publicAvailability={};
+   (rows||[]).forEach(r=>{ if(r.booking_date)publicAvailability[r.booking_date]="booked"; });
+   publicRenderCalendar();
+   if(publicBooking.date && publicAvailability[publicBooking.date]==="booked")publicBooking.date="";
+   publicShowSelectedDay();
+ }catch(e){
+   console.error("get_booked_slots_public",e);
+   publicAvailability={};
+   publicRenderCalendar();
+   if(host)host.innerHTML='<div class="card"><div class="emptymsg">Impossible de charger les disponibilités. Réessayez dans un instant.</div></div>';
+ }
+}
+function publicSelectDate(ds){
+ if(isSunday(ds)||publicAvailability[ds]==="booked")return;
+ publicBooking.date=ds;publicBooking.time="";publicShowSelectedDay();
+}
+function publicShowSelectedDay(){
+ const host=document.getElementById("pubslots");
+ if(!host)return;
+ if(!publicBooking.date){host.innerHTML='<div class="card"><div class="emptymsg">Choisissez une date disponible.</div></div>';return;}
+ const all=["10:00","11:00","12:00","13:00","14:00"];
+ host.innerHTML=`<div class="card"><h2>${frDate(publicBooking.date)}</h2><div class="small" style="margin-bottom:10px">Créneaux disponibles · 10 h à 14 h</div><div class="slotgrid">${all.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div></div>`;
+}
+function publicChooseTime(t){publicBooking.time=t;publicStep3()}
+function publicStep3(){
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">${esc(publicBooking.service)} · ${frDate(publicBooking.date)} à ${publicBooking.time}</div></header><main id="app"><div class="card"><label>Prénom *</label><input id="pf" placeholder="Prénom"><label>Nom *</label><input id="pl" placeholder="Nom"><label>Téléphone *</label><input id="pp" type="tel" placeholder="06 00 00 00 00"><label>E-mail</label><input id="pe" type="email" placeholder="cliente@email.com"><div id="pubConfirmError" class="small" style="color:#9b3949;margin-top:10px"></div><button id="pubConfirmBtn" style="width:100%;margin-top:16px" onclick="publicConfirm()">CONFIRMER MON RENDEZ-VOUS</button></div><button class="secondary" style="width:100%" onclick="publicStep2()">← Retour</button></main>`;
+}
+async function publicConfirm(){
+ const first=document.getElementById("pf").value.trim(),last=document.getElementById("pl").value.trim(),phone=document.getElementById("pp").value.trim(),email=document.getElementById("pe").value.trim();
+ const err=document.getElementById("pubConfirmError"),btn=document.getElementById("pubConfirmBtn");
+ if(!first||!last||!phone){if(err)err.textContent="Merci de renseigner le prénom, le nom et le téléphone.";return}
+ if(!publicBooking.date||!publicBooking.time){if(err)err.textContent="Choisissez une date et un créneau.";return}
+ if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…"}
+ try{
+   const price=publicBooking.service.includes("Fulani")?60:50;
+   let result,error;
+   ({data:result,error}=await supabaseClient.rpc("create_public_booking",{
+     p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
+     p_service_name:publicBooking.service,p_booking_date:publicBooking.date,p_booking_time:publicBooking.time
+   }));
+   if(error){
+     const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
+     const endAt=new Date(startAt.getTime()+60*60*1000);
+     const fallback=await supabaseClient.rpc("create_public_appointment",{
+       p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
+       p_service_name:publicBooking.service,p_service_price:price,
+       p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
+     });
+     if(fallback.error)throw error;
+     result=fallback.data;
+   }
+   const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
+   publicSuccess(a);
+ }catch(e){
+   console.error("create_public_booking",e);
+   if(err)err.textContent="Ce créneau vient peut-être d'être réservé. Revenez au calendrier et choisissez une autre disponibilité.";
+   if(btn){btn.disabled=false;btn.textContent="CONFIRMER MON RENDEZ-VOUS"}
+ }
+}
+
+function publicSuccess(a){
+ document.getElementById("shell").innerHTML=`<main id="app"><div class="card success"><div style="font-size:52px">🎉</div><h2>Demande de rendez-vous envoyée !</h2><p class="sub">${esc(a.service)}<br>📅 ${frDate(a.date)} à ${a.time}</p><p>Votre demande est enregistrée. Vous recevrez la confirmation de la coiffeuse.</p><button class="big-book" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
+}
+function render(){
+ if(isPublic()){publicHome();return;}
+ if(isRecoveryFlow()){showResetPasswordPage();return;}
+ if(authLoading){return;}
+ if(!authSession){showLoginPage();return;}
+ if(!document.querySelector("nav button")) restoreAdminShell();
+ document.body.className="";
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
+ const t=currentTab();
+ if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="account") accountPage(); else homePage();
+}
+function accountPage(){
+  const email=authSession?.user?.email||"";
+  app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Compte professionnel connecté</div>
+    <div class="small" style="margin-top:14px">Adresse e-mail</div><b>${esc(email)}</b>
+  </div>
+  <div class="card"><h2>Modifier mon mot de passe</h2>
+    <div class="sub">Vous pouvez changer votre mot de passe directement ici, sans attendre un e-mail de récupération.</div>
+    <label>Nouveau mot de passe</label><input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="Au moins 8 caractères">
+    <label>Confirmer le mot de passe</label><input id="accountNewPassword2" type="password" autocomplete="new-password" placeholder="Retapez votre mot de passe">
+    <div id="accountPasswordError" style="color:#9b3949;font-size:14px;margin-top:12px"></div>
+    <button id="accountPasswordBtn" style="width:100%;margin-top:14px" onclick="changePasswordFromAccount()">MODIFIER LE MOT DE PASSE</button>
+  </div>
+  <div class="card"><button class="secondary" style="width:100%" onclick="logoutProfessional()">Se déconnecter</button></div>`;
+}
+async function changePasswordFromAccount(){
+  const p1=document.getElementById("accountNewPassword")?.value||"";
+  const p2=document.getElementById("accountNewPassword2")?.value||"";
+  const err=document.getElementById("accountPasswordError");
+  const btn=document.getElementById("accountPasswordBtn");
+  if(p1.length<8){if(err)err.textContent="Le mot de passe doit contenir au moins 8 caractères.";return;}
+  if(p1!==p2){if(err)err.textContent="Les deux mots de passe ne correspondent pas.";return;}
+  if(btn){btn.disabled=true;btn.textContent="MODIFICATION…";}
+  const {error}=await supabaseClient.auth.updateUser({password:p1});
+  if(error){
+    if(err)err.textContent=error.message||"Impossible de modifier le mot de passe.";
+    if(btn){btn.disabled=false;btn.textContent="MODIFIER LE MOT DE PASSE";}
+    return;
+  }
+  if(err){err.style.color="#39734a";err.textContent="Mot de passe modifié avec succès ✓";}
+  const a=document.getElementById("accountNewPassword");
+  const b=document.getElementById("accountNewPassword2");
+  if(a)a.value=""; if(b)b.value="";
+  if(btn){btn.disabled=false;btn.textContent="MODIFIER LE MOT DE PASSE";}
+}
+function homePage(){
+ const today=isoToday(), todayA=data.appointments.filter(a=>a.date===today);
+ const month=new Date().toISOString().slice(0,7);
+ const income=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé").reduce((s,a)=>s+Number(a.price||0),0);
+ app.innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
+ <div class="row" style="margin-top:15px"><div><b>${todayA.length}</b><div class="small">RDV aujourd'hui</div></div><div><b>${euro(income)}</b><div class="small">CA du mois</div></div></div></div>
+ <div class="card"><h2>🔔 Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
+ <div class="actions" style="margin-top:12px"><button onclick="newAppointment()">＋ Ajouter un rendez-vous</button><button class="secondary" onclick="logoutProfessional()">Se déconnecter</button></div>`;
+}
+function apptHTML(a){
+ const reminderText=a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant";
+ return `<div class="appt"><div><b>${esc(a.time)} · ${esc(a.clientName)}</b> <span class="badge">${esc(a.status)}</span></div>
+ <div class="small">${frDate(a.date)} · ${esc(a.service)} · ${euro(a.price)}</div>
+ ${a.phone?`<div class="small">📞 ${esc(a.phone)}</div>`:""}
+ <div class="small">🔔 ${reminderText}</div>
+ ${a.phone&&wa(a.phone)?`<div class="actions" style="margin-top:8px"><a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer confirmation WhatsApp</a></div>`:""}
+ </div>`
+}
+function waConfirm(a){
+ const p=(a.phone||"").replace(/[^\d+]/g,"");
+ let n=p.startsWith("0")?"33"+p.slice(1):p.startsWith("+")?p.slice(1):p;
+ const msg=`Bonjour ${a.firstName||a.clientName}, je vous confirme votre rendez-vous le ${frDate(a.date)} à ${a.time} pour ${a.service} chez Coiffure sur Nantes. Prix : ${euro(a.price)}. Acompte : ${euro(a.deposit)}. À bientôt 😊`;
+ return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+}
+let calDate=new Date();
+window.selectedDay=isoToday();
+function isSunday(ds){if(!ds)return false; const [y,m,d]=ds.split("-").map(Number); return new Date(y,m-1,d).getDay()===0;}
+function isUnavailableDate(ds){return data.appointments.some(a=>a.date===ds&&a.status!=="Annulé");}
+function appointmentsPage(){
+ const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate();
+ const firstDay=first.getDay();
+ const start=(firstDay+6)%7; // Monday=0 ... Sunday=6
+ const startCol=Math.min(start,6);
+ const names=["Lun","Mar","Mer","Jeu","Ven","Sam"];
+ let cells=names.map(x=>`<div class="dow">${x}</div>`).join("");
+ // Sunday's column is not displayed because the salon is closed on Sundays.
+ for(let i=0;i<Math.min(startCol,6);i++)cells+='<div class="day empty"></div>';
+ for(let d=1;d<=days;d++){
+   let ds=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+   let dow=new Date(y,m,d).getDay();
+   if(dow===0) continue;
+   let unavailable=isUnavailableDate(ds);
+   let count=data.appointments.filter(a=>a.date===ds&&a.status!=="Annulé").length;
+   let cls=`day ${ds===isoToday()?"today":""} ${ds===window.selectedDay?"selected":""} ${unavailable?"unavailable":""}`;
+   cells+=`<button class="${cls}" onclick="selectedDay='${ds}';appointmentsPage()" title="${unavailable?'Journée indisponible':'Disponible'}">${d}${count?` <span class="dot"></span>`:""}</button>`;
+ }
+ let selected=window.selectedDay||isoToday();
+ if(isSunday(selected)){ selected=isoToday(); if(isSunday(selected)){ const d=new Date(); d.setDate(d.getDate()+1); selected=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;} window.selectedDay=selected; }
+ let list=data.appointments.filter(a=>a.date===selected).sort((a,b)=>a.time.localeCompare(b.time));
+ let upcoming=data.appointments.filter(a=>a.date>=isoToday()&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
+ app.innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
+ <div class="cal">${cells}</div></div>
+ <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
+ ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="small">🔔 ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant"}</div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 WhatsApp</a>`:""}</div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>
+ <div class="card"><div class="calendar-head"><h2>🔔 Prochains rappels</h2><button class="secondary" onclick="nav('reminders')">Voir tout</button></div>${upcoming.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Aucun rappel":"Rappel 24 h avant"}</div>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Confirmer sur WhatsApp</a>`:""}</div>`).join("")||'<div class="emptymsg">Aucun prochain rendez-vous.</div>'}</div>`;
+}
+function newAppointment(date=isoToday(),existing=null){
+ if(isSunday(date)){ alert("Le dimanche, le salon est fermé. Choisissez du lundi au samedi."); return; }
+ const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
+ <label>Prénom</label><input id="first" value="${esc(a.firstName)}" placeholder="Prénom">
+ <label>Nom</label><input id="last" value="${esc(a.lastName)}" placeholder="Nom">
+ <label>📞 Téléphone</label><input id="phone" type="tel" value="${esc(a.phone)}" placeholder="06 00 00 00 00">
+ <label>📧 E-mail</label><input id="email" type="email" value="${esc(a.email)}" placeholder="cliente@email.com">
+ <label>📝 Notes sur la cliente</label><textarea id="clientNotes" placeholder="Préférences, habitudes, informations utiles...">${esc(a.clientNotes)}</textarea>
+ <label>Prestation</label><select id="service">${services.map(s=>`<option ${s===a.service?"selected":""}>${esc(s)}</option>`).join("")}</select>
+ <div class="row"><div><label>Date</label><input id="date" type="date" value="${a.date}"></div><div><label>Heure</label><input id="time" type="time" value="${a.time}"></div></div>
+ <div class="row"><div><label>Prix (€)</label><input id="price" type="number" step="0.01" value="${a.price}"></div><div><label>Acompte (€)</label><input id="deposit" type="number" step="0.01" value="${a.deposit}"></div></div>
+ <label>Statut</label><select id="status"><option ${a.status==="Confirmé"?"selected":""}>Confirmé</option><option ${a.status==="En attente"?"selected":""}>En attente</option><option ${a.status==="Annulé"?"selected":""}>Annulé</option></select>
+ <label>🔔 Rappel</label><select id="reminder">
+   <option value="24h" ${(a.reminder||"24h")==="24h"?"selected":""}>24 h avant</option>
+   <option value="2h" ${(a.reminder||"24h")==="2h"?"selected":""}>2 h avant</option>
+   <option value="none" ${(a.reminder||"24h")==="none"?"selected":""}>Aucun rappel</option>
+ </select>
+ <label>Notes du rendez-vous</label><textarea id="notes" placeholder="Mèches, longueur, modèle...">${esc(a.notes)}</textarea>
+ <button style="width:100%;margin-top:12px" onclick="saveAppointment('${a.id}',${!!existing})">Enregistrer le rendez-vous</button></div>`;
+ window.scrollTo(0,0);
+}
+function saveAppointment(id,isEdit){
+ const first=firstEl("first").value.trim(),last=firstEl("last").value.trim();
+ if(!first&&!last){alert("Ajoute au moins le prénom ou le nom de la cliente.");return}
+ const ckey=clientKey(first,last), old=data.appointments.find(x=>x.id===id);
+ const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,reminder:firstEl("reminder").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
+ const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.status!=="Annulé");
+ if(conflict&&!confirm("Cette journée est déjà réservée. Enregistrer un deuxième rendez-vous ce jour-là ?"))return;
+ if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
+ upsertClient({key:ckey,name:a.clientName,firstName:first,lastName:last,phone:a.phone,email:a.email,notes:a.clientNotes});
+ save(); location.hash="appointments"; selectedDay=a.date; render();
+}
+function firstEl(id){return document.getElementById(id)}
+function editAppointment(id){let a=data.appointments.find(x=>x.id===id);if(a)newAppointment(a.date,a)}
+function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a)a.status="Annulé";save();render()}}
+function clientsPage(){
+ const clients=[...data.clients].sort((a,b)=>a.name.localeCompare(b.name));
+ app.innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
+ ${clients.map(c=>`<div class="card client-card"><div><div class="client-name">${esc(c.name)}</div><div class="small">${esc(c.phone||"Téléphone non renseigné")}</div><div class="small">${esc(c.email||"E-mail non renseigné")}</div></div><button onclick="clientProfile('${encodeURIComponent(c.key)}')">Voir</button></div>`).join("")||'<div class="card emptymsg">Aucune cliente pour le moment.</div>'}`;
+}
+function clientProfile(enc){
+ const key=decodeURIComponent(enc),c=getClient(key),aps=data.appointments.filter(a=>a.clientKey===key).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ if(!c)return clientsPage();
+ const validAps=aps.filter(a=>a.status!=="Annulé");
+ const ca=validAps.reduce((sum,a)=>sum+Number(a.price||0),0);
+ const deposits=validAps.reduce((sum,a)=>sum+Number(a.deposit||0),0);
+ const balance=ca-deposits;
+ app.innerHTML=`<div class="card">
+ <div class="calendar-head"><h2>${esc(c.name)}</h2><button class="secondary" onclick="clientsPage()">Retour</button></div>
+ <div class="small">📞 ${esc(c.phone||"Non renseigné")}</div>
+ ${c.phone?`<div class="actions" style="margin-top:12px"><a class="link" href="tel:${esc(c.phone)}">📞 Appeler</a>${wa(c.phone)?`<a class="link" href="${wa(c.phone)}" target="_blank">💬 WhatsApp</a>`:""}</div>`:""}
+ <div class="small" style="margin-top:10px">📧 ${esc(c.email||"Non renseigné")}</div>
+ <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+ <b>Notes cliente</b><p class="sub">${esc(c.notes||"Aucune note.")}</p>
+ <div class="row" style="margin-top:16px"><div><b>${aps.length}</b><div class="small">Rendez-vous</div></div><div><b>${euro(ca)}</b><div class="small">CA cliente</div></div></div>
+ <div class="row" style="margin-top:16px"><div><b>${euro(deposits)}</b><div class="small">Acomptes</div></div><div><b>${euro(balance)}</b><div class="small">Solde à encaisser</div></div></div>
+ <button class="danger" style="width:100%;margin-top:20px" onclick="deleteClient('${encodeURIComponent(c.key)}')">🗑️ Supprimer cette cliente</button>
+ </div>
+ <div class="card"><h2>Historique complet</h2>${aps.map(apptHTML).join("")||'<div class="emptymsg">Aucun rendez-vous.</div>'}</div>`;
+}
+function deleteClient(enc){
+ const key=decodeURIComponent(enc), c=getClient(key);
+ if(!c)return;
+ const count=data.appointments.filter(a=>a.clientKey===key).length;
+ const msg=count?`Supprimer ${c.name} ? Cela supprimera aussi ses ${count} rendez-vous de l'application.`:`Supprimer ${c.name} ?`;
+ if(!confirm(msg))return;
+ data.clients=data.clients.filter(x=>x.key!==key);
+ data.appointments=data.appointments.filter(a=>a.clientKey!==key);
+ save(); location.hash="clients"; render();
+}
+function wa(phone){let p=(phone||"").replace(/[^\d+]/g,"");if(p.startsWith("0"))p="33"+p.slice(1);if(p.startsWith("+"))p=p.slice(1);return /^33\d{9}$/.test(p)?`https://wa.me/${p}`:""}
+function reminderLabel(a){
+  return a.reminder==="2h"?"2 h avant":a.reminder==="none"?"Aucun rappel":"24 h avant";
+}
+function appointmentMoment(a){
+  if(!a.date||!a.time)return null;
+  const [y,m,d]=a.date.split("-").map(Number), [hh,mm]=a.time.split(":").map(Number);
+  return new Date(y,m-1,d,hh,mm);
+}
+function remindersPage(){
+  const now=new Date();
+  const upcoming=data.appointments
+    .filter(a=>a.status!=="Annulé" && a.reminder!=="none")
+    .map(a=>({a,dt:appointmentMoment(a)}))
+    .filter(x=>x.dt && x.dt.getTime()>now.getTime()-86400000)
+    .sort((x,y)=>x.dt-y.dt);
+
+  const due=upcoming.filter(x=>{
+    const offset=x.a.reminder==="2h"?2:24;
+    const reminderAt=x.dt.getTime()-offset*3600000;
+    return reminderAt<=now.getTime() && x.dt.getTime()>now.getTime();
+  });
+
+  app.innerHTML=`<div class="card"><h2>🔔 Rappels</h2>
+    <div class="sub">Les rappels enregistrés pour tes rendez-vous.</div>
+    <button style="margin-top:14px" onclick="requestNotifications()">🔔 Activer les notifications</button>
+    <div class="small" style="margin-top:10px">Sur Android, une notification locale peut être affichée lorsque l'application est ouverte. Pour des notifications fiables même quand l'application est complètement fermée, il faudra plus tard connecter un service de notifications.</div>
+  </div>
+  ${due.length?`<div class="card"><h2>⚠️ À rappeler maintenant</h2>${due.map(x=>reminderCard(x.a,true)).join("")}</div>`:""}
+  <div class="card"><h2>📅 Prochains rappels</h2>
+    ${upcoming.map(x=>reminderCard(x.a,false)).join("")||'<div class="emptymsg">Aucun rappel programmé.</div>'}
+  </div>`;
+}
+function reminderCard(a,due){
+  return `<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b>
+  <div class="small">${esc(a.service)} · 🔔 ${reminderLabel(a)}</div>
+  ${due?'<span class="badge">Rappel à envoyer</span>':""}
+  <div class="actions" style="margin-top:8px">
+  ${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer sur WhatsApp</a>`:""}
+  <button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button>
+  </div></div>`;
+}
+async function requestNotifications(){
+  if(!("Notification" in window)){alert("Les notifications ne sont pas prises en charge par ce navigateur.");return;}
+  const p=await Notification.requestPermission();
+  if(p==="granted"){
+    new Notification("Coiffure sur Nantes",{body:"Les notifications sont activées pour cette session."});
+  }else{
+    alert("Les notifications n'ont pas été autorisées.");
+  }
+}
+function budgetPage(){
+ const month=new Date().toISOString().slice(0,7), arr=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé");
+ const ca=arr.reduce((s,a)=>s+Number(a.price||0),0), dep=arr.reduce((s,a)=>s+Number(a.deposit||0),0), sol=ca-dep;
+ app.innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
+ <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
+}
+bindNav();
+// Public booking link: add #book to the application URL. Professional area is protected by Supabase Auth.
+supabaseClient.auth.getSession().then(({data})=>{
+  authSession=data.session;
+  authLoading=false;
+  if(isRecoveryFlow()){showResetPasswordPage();}
+  else if(!isPublic() && location.hash==="#admin") showLoginPage();
+  else if(!isPublic() && !authSession) showLoginPage();
+  else render();
+}).catch(()=>{
+  authLoading=false;
+  if(isRecoveryFlow()) showResetPasswordPage("Ouvrez le lien de réinitialisation reçu par e-mail.");
+  else if(!isPublic()) showLoginPage("Impossible de vérifier la connexion. Vérifiez votre connexion internet.");
+});
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  authSession=session;
+  if(_event==="PASSWORD_RECOVERY"){showResetPasswordPage();return;}
+  if(!session && !isPublic() && !isRecoveryFlow()){showLoginPage();}
+});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body></html>
