@@ -1,4 +1,4 @@
-const CACHE = "csn-v34";
+const CACHE = "csn-v36";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -8,7 +8,8 @@ self.addEventListener("install", event => {
         "./",
         "./index.html",
         "./manifest.webmanifest",
-        "./icon-192.png"
+        "./icon-192.png",
+        "./icon-512.png"
       ])
     )
   );
@@ -17,11 +18,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE)
-          .map(key => caches.delete(key))
-      )
+      Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))
     ).then(() => self.clients.claim())
   );
 });
@@ -29,41 +26,22 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
-
-  // Always use the network for Supabase and external APIs.
-  if (
-    url.hostname.includes("supabase.co") ||
-    url.hostname.includes("supabase.in") ||
-    url.hostname.includes("jsdelivr.net")
-  ) {
-    return;
-  }
-
-  // HTML must be network-first so GitHub Pages updates are picked up.
+  if (url.hostname.includes("supabase.co") || url.hostname.includes("supabase.in") || url.hostname.includes("jsdelivr.net")) return;
   if (request.mode === "navigate" || request.destination === "document") {
     event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(request, copy));
-          return response;
-        })
-        .catch(() =>
-          caches.match(request).then(cached => cached || caches.match("./index.html"))
-        )
+      fetch(request).then(response => {
+        const copy=response.clone();
+        caches.open(CACHE).then(cache=>cache.put(request,copy));
+        return response;
+      }).catch(()=>caches.match(request).then(cached=>cached||caches.match("./index.html")))
     );
     return;
   }
-
-  // Other local files can use cache-first, with network fallback.
   event.respondWith(
-    caches.match(request).then(cached =>
-      cached ||
-      fetch(request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(request, copy));
-        return response;
-      })
-    )
+    caches.match(request).then(cached => cached || fetch(request).then(response => {
+      const copy=response.clone();
+      caches.open(CACHE).then(cache=>cache.put(request,copy));
+      return response;
+    }))
   );
 });

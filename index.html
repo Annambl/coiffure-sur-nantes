@@ -34,7 +34,7 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 
 .public-cal{margin-top:12px}.public-cal .day{min-height:42px}.public-cal .day:not(.unavailable){background:#eef8ef;color:#39734a}.public-cal .day.unavailable{background:#f7dfe2;color:#a33a4b;cursor:not-allowed}.public-cal .day.selected{outline:2px solid #9b5264;outline-offset:-2px}.public-cal .day.today{font-weight:800}.public-cal .day.empty{background:transparent}
 
-.public-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:4px 0 16px}.public-step{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;color:#aaa;font-size:10px}.public-step span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#eee;color:#777;font-weight:800}.public-step.active{color:var(--rose)}.public-step.active span{background:var(--rose);color:#fff}.public-step.done{color:#5f8b6a}.public-step.done span{background:#e2f1e5;color:#39734a}.public-service-list{display:grid;gap:10px}.public-service{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#fff;color:var(--ink);border:1px solid #eee1e4;border-radius:18px;padding:16px;box-shadow:0 2px 10px #00000006}.public-service.selected{border-color:var(--rose);background:var(--rose2)}.public-service-main{display:flex;flex-direction:column;gap:5px}.public-service-main b{font-size:16px}.public-service-side{display:flex;flex-direction:column;align-items:flex-end;gap:5px;white-space:nowrap}.public-service-side strong{font-size:16px;color:var(--rose)}.public-service-side span{font-size:12px;color:#777}.availability-legend{display:flex;justify-content:center;gap:20px;font-size:12px;color:#777;margin:4px 0 12px}.public-cal .day.past{background:#f1f1f1;color:#aaa;border-color:#eee}.selected-date-card{border:2px solid #ead1d7}.booking-summary{background:#fff9fa;border:1px solid #f0dce1}.summary-title{font-weight:900;font-size:17px;margin-bottom:12px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eee6e8;font-size:14px}.summary-row span{color:#777}.summary-row.total{border-bottom:0;padding-bottom:0;font-size:16px}.summary-row.total strong{color:var(--rose);font-size:20px}.form-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:4px}.form-error{color:#9b3949;font-size:13px;margin-top:10px;line-height:1.4}.public-logo-img{width:82px;height:82px;border-radius:22px;object-fit:cover;box-shadow:0 5px 20px #00000012}
+.public-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:4px 0 16px}.public-step{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;color:#aaa;font-size:10px}.public-step span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#eee;color:#777;font-weight:800}.public-step.active{color:var(--rose)}.public-step.active span{background:var(--rose);color:#fff}.public-step.done{color:#5f8b6a}.public-step.done span{background:#e2f1e5;color:#39734a}.public-service-list{display:grid;gap:10px}.public-service{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#fff;color:var(--ink);border:1px solid #eee1e4;border-radius:18px;padding:16px;box-shadow:0 2px 10px #00000006}.public-service.selected{border-color:var(--rose);background:var(--rose2)}.public-service-main{display:flex;flex-direction:column;gap:5px}.public-service-main b{font-size:16px}.public-service-side{display:flex;flex-direction:column;align-items:flex-end;gap:5px;white-space:nowrap}.public-service-side strong{font-size:16px;color:var(--rose)}.public-service-side span{font-size:12px;color:#777}.availability-legend{display:flex;justify-content:center;gap:20px;font-size:12px;color:#777;margin:4px 0 12px}.public-cal .day.past{background:#f1f1f1;color:#aaa;border-color:#eee}.selected-date-card{border:2px solid #ead1d7}.booking-summary{background:#fff9fa;border:1px solid #f0dce1}.summary-title{font-weight:900;font-size:17px;margin-bottom:12px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eee6e8;font-size:14px}.summary-row span{color:#777}.summary-row.total{border-bottom:0;padding-bottom:0;font-size:16px}.summary-row.total strong{color:var(--rose);font-size:20px}.form-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:4px}.status-card{border:2px solid #ead1d7;background:#fff9fa}.status-pending{color:#9b6b3a;font-weight:900}.status-confirmed{color:#39734a;font-weight:900}.status-cancelled{color:#9b3949;font-weight:900}.form-error{color:#9b3949;font-size:13px;margin-top:10px;line-height:1.4}.public-logo-img{width:82px;height:82px;border-radius:22px;object-fit:cover;box-shadow:0 5px 20px #00000012}
 </style>
 </head>
 <body>
@@ -49,11 +49,44 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 <button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
 </nav>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://kaunnovtcujfgktyxzgji.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_A2gCiij_BTERARnkOSPj4Q_lZktqbeA";
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+async function supabaseRpc(functionName, body){
+  if(!navigator.onLine) throw Object.assign(new Error("OFFLINE"),{code:"OFFLINE"});
+  const url=`${SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(functionName)}`;
+  let response;
+  try{
+    response=await fetch(url,{
+      method:"POST",
+      mode:"cors",
+      credentials:"omit",
+      cache:"no-store",
+      headers:{
+        "apikey":SUPABASE_PUBLISHABLE_KEY,
+        "Authorization":`Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+        "Content-Type":"application/json",
+        "Accept":"application/json"
+      },
+      body:JSON.stringify(body||{})
+    });
+  }catch(networkError){
+    throw Object.assign(new Error("NETWORK_ERROR"),{code:"NETWORK_ERROR",cause:networkError});
+  }
+  const text=await response.text();
+  let data=null;
+  if(text){try{data=JSON.parse(text)}catch(_){data=text}}
+  if(!response.ok){
+    const err=typeof data==="object"&&data?data:{};
+    throw Object.assign(new Error(err.message||err.error||`HTTP ${response.status}`),{
+      code:err.code||`HTTP_${response.status}`,
+      details:err.details||"",
+      hint:err.hint||"",
+      status:response.status
+    });
+  }
+  return data;
+}
 let authSession=null;
 let authLoading=true;
 
@@ -183,7 +216,7 @@ window.addEventListener("hashchange",render);
 function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
 function publicHome(){
  document.body.className="public";
- document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icon-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
+ document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icon-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><button class="secondary big-book" onclick="publicStatusForm()">🔎 SUIVRE MA DEMANDE</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
 const publicServiceDetails={
@@ -264,14 +297,12 @@ async function publicLoadAvailability(){
  const end=`${y}-${String(m+1).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;
  try{
    let rows,error;
-   const first=await supabaseClient.rpc("get_booked_dates",{p_from:start,p_to:end});
-   rows=first.data; error=first.error;
-   if(error){
-     const fallback=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
-     rows=(fallback.data||[]).map(r=>({booking_date:r.booking_date}));
-     error=fallback.error;
+   try{
+     rows=await supabaseRpc("get_booked_dates",{p_from:start,p_to:end});
+   }catch(firstError){
+     const fallbackRows=await supabaseRpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
+     rows=(fallbackRows||[]).map(r=>({booking_date:r.booking_date}));
    }
-   if(error)throw error;
    publicAvailability={};
    (rows||[]).forEach(r=>{
      const d=String(r.booking_date||"").slice(0,10);
@@ -324,45 +355,20 @@ async function publicConfirm(){
      p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
    };
 
-   // First try the Supabase JS client. If PostgREST reports a transient/schema issue,
-   // retry once through the REST RPC endpoint with the exact same payload.
-   let result=null;
-   let error=null;
-   const firstTry=await supabaseClient.rpc("create_public_appointment",payload);
-   result=firstTry.data;
-   error=firstTry.error;
+   // One clean Supabase RPC call. Do not retry automatically: if the first request
+   // reached the database, a second attempt could create confusing duplicate errors.
+   const result=await supabaseRpc("create_public_appointment",payload);
 
-   if(error){
-     const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_public_appointment`,{
-       method:"POST",
-       headers:{
-         "apikey":SUPABASE_PUBLISHABLE_KEY,
-         "Authorization":`Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-         "Content-Type":"application/json",
-         "Accept":"application/json"
-       },
-       body:JSON.stringify(payload)
-     });
-     const text=await response.text();
-     if(!response.ok){
-       let body={};
-       try{body=JSON.parse(text)}catch(_){}
-       const restError=new Error(body.message||body.error||body.hint||text||`HTTP ${response.status}`);
-       restError.code=body.code||String(response.status);
-       restError.details=body.details||"";
-       throw restError;
-     }
-     try{result=JSON.parse(text)}catch(_){result=text}
-   }
-
-   const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
+   const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last),source:"public"};
    publicSuccess(a);
  }catch(e){
    console.error("create_public_appointment",e);
    const msg=String(e?.message||e?.details||e?.hint||"");
    const code=String(e?.code||"");
    if(err){
-     if(msg.includes("DAY_ALREADY_BOOKED"))err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
+     if(code==="OFFLINE")err.textContent="Votre téléphone n'est pas connecté à Internet. Vérifiez votre connexion puis réessayez.";
+     else if(code==="NETWORK_ERROR")err.textContent="La connexion au serveur de réservation a échoué. Vérifiez votre connexion Internet puis réessayez.";
+     else if(msg.includes("DAY_ALREADY_BOOKED"))err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
      else if(msg.includes("INVALID_CONTACT"))err.textContent="Merci de vérifier vos coordonnées.";
      else if(msg.includes("INVALID_TIME"))err.textContent="Ce créneau n'est plus disponible. Revenez au calendrier.";
      else err.textContent=`La réservation n'a pas pu être enregistrée (${code||"erreur"}). ${msg||"Réessayez."}`;
@@ -372,13 +378,58 @@ async function publicConfirm(){
 }
 
 function publicSuccess(a){
- document.getElementById("shell").innerHTML=`<main id="app"><div class="card success"><div style="font-size:52px">🎉</div><h2>Demande de rendez-vous envoyée !</h2><p class="sub">${esc(a.service)}<br>📅 ${frDate(a.date)} à ${a.time}</p><p>Votre demande est enregistrée. Vous recevrez la confirmation de la coiffeuse.</p><button class="big-book" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
+ const ref=`CSN-${a.id}`;
+ try{localStorage.setItem("csn_last_public_ref",ref);localStorage.setItem("csn_last_public_phone",a.phone||"")}catch(_){ }
+ document.getElementById("shell").innerHTML=`<main id="app"><div class="card success status-card"><div style="font-size:52px">📨</div><h2>Demande prise en charge</h2><p class="sub">${esc(a.service)}<br>📅 ${frDate(a.date)} à ${a.time}</p><p><strong>Statut : <span class="status-pending">EN ATTENTE DE VALIDATION</span></strong></p><p>Votre demande est bien enregistrée. La coiffeuse doit encore la valider depuis son espace professionnel.</p><div class="card" style="margin:16px 0;background:#fff"><div class="small">Référence de votre demande</div><strong style="font-size:20px">${esc(ref)}</strong><div class="small" style="margin-top:6px">Gardez cette référence pour suivre votre demande.</div></div><button class="big-book" onclick="publicStatusPage(${Number(a.id)||0})">🔎 Voir le statut</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
+}
+function publicStatusForm(){
+ let ref="",phone="";try{ref=localStorage.getItem("csn_last_public_ref")||"";phone=localStorage.getItem("csn_last_public_phone")||""}catch(_){ }
+ document.body.className="public";
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Suivre ma demande</div><div class="public-sub">Entrez votre référence et votre téléphone.</div></header><main id="app"><div class="card"><label>Référence de la demande</label><input id="statusRef" value="${esc(ref)}" placeholder="Ex. CSN-12"><label>Téléphone</label><input id="statusPhone" type="tel" value="${esc(phone)}" placeholder="06 00 00 00 00"><div id="statusError" class="form-error"></div><button class="big-book" onclick="publicStatusLookup()">VOIR MA DEMANDE</button></div><button class="secondary" style="width:100%" onclick="publicHome()">← Retour</button></main>`;
+}
+async function publicStatusLookup(){
+ const ref=(document.getElementById("statusRef")?.value||"").trim().toUpperCase();
+ const phone=(document.getElementById("statusPhone")?.value||"").trim();
+ const err=document.getElementById("statusError");
+ const id=Number(ref.replace(/^CSN-/i,""));
+ if(!Number.isInteger(id)||id<=0||!phone){if(err)err.textContent="Vérifiez votre référence et votre téléphone.";return}
+ if(err)err.textContent="Chargement…";
+ try{
+   const rows=await supabaseRpc("get_public_appointment_status",{p_id:id,p_phone:phone});
+   const a=Array.isArray(rows)?rows[0]:rows;
+   if(!a){if(err)err.textContent="Aucune demande trouvée avec ces informations.";return}
+   publicStatusPage(a.id,a.status,a.service_name,a.start_at);
+ }catch(e){console.error("get_public_appointment_status",e);if(err)err.textContent="Impossible de consulter le statut pour le moment. Réessayez."}
+}
+let publicStatusTimer=null;
+function publicStatusPage(id,status,service,startAt){
+ if(publicStatusTimer){clearInterval(publicStatusTimer);publicStatusTimer=null;}
+ const map={"En attente":{label:"DEMANDE PRISE EN CHARGE",cls:"status-pending",icon:"📨",text:"Votre demande est bien enregistrée. Elle sera validée depuis l’espace professionnel."},"Confirmé":{label:"DEMANDE VALIDÉE",cls:"status-confirmed",icon:"✅",text:"Votre rendez-vous est validé. À bientôt !"},"Annulé":{label:"DEMANDE ANNULÉE",cls:"status-cancelled",icon:"❌",text:"Cette demande a été annulée."}};
+ const st=map[status]||map["En attente"];
+ let dateText="";
+ if(startAt){const d=new Date(startAt);if(!isNaN(d))dateText=`${d.toLocaleDateString("fr-FR",{timeZone:"Europe/Paris"})} à ${d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})}`}
+ document.body.className="public";
+ document.getElementById("shell").innerHTML=`<main id="app"><div class="card success status-card"><div style="font-size:52px">${st.icon}</div><h2>${st.label}</h2><p class="sub">${esc(service||"")} ${dateText?`<br>📅 ${esc(dateText)}`:""}</p><p><strong class="${st.cls}">${st.label}</strong></p><p>${st.text}</p><div class="small">Référence : CSN-${esc(id)}</div><button class="big-book" onclick="publicStatusLookupSaved()">Actualiser le statut</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
+ if(status==="En attente"){
+   publicStatusTimer=setInterval(()=>publicStatusLookupSaved(true),10000);
+ }
+}
+async function publicStatusLookupSaved(silent=false){
+ let ref="",phone="";try{ref=localStorage.getItem("csn_last_public_ref")||"";phone=localStorage.getItem("csn_last_public_phone")||""}catch(_){}
+ const id=Number(ref.replace(/^CSN-/i,""));
+ if(!Number.isInteger(id)||id<=0||!phone)return;
+ try{
+   const rows=await supabaseRpc("get_public_appointment_status",{p_id:id,p_phone:phone});
+   const a=Array.isArray(rows)?rows[0]:rows;
+   if(a){publicStatusPage(a.id,a.status,a.service_name,a.start_at);}
+ }catch(e){if(!silent)console.warn("get_public_appointment_status",e);}
 }
 function render(){
  if(isPublic()){publicHome();return;}
   if(authLoading){return;}
  if(!authSession){showLoginPage();return;}
  if(!document.querySelector("nav button")) restoreAdminShell();
+ if(!onlineSyncDone)syncOnlineAppointments();
  document.body.className="";
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
  const t=currentTab();
@@ -441,7 +492,7 @@ function appointmentsPage(){
  let list=data.appointments.filter(a=>a.date===selected).sort((a,b)=>a.time.localeCompare(b.time));
  let upcoming=data.appointments.filter(a=>a.date>=isoToday()&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
  app.innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
- <div class="cal">${cells}</div></div>
+ <div class="cal">${cells}</div><button class="secondary" style="width:100%;margin-top:12px" onclick="onlineSyncDone=false;syncOnlineAppointments(true).then(()=>{save();appointmentsPage()})">🔄 Actualiser les demandes en ligne</button></div>
  <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
  ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="small">🔔 ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant"}</div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 WhatsApp</a>`:""}</div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>
  <div class="card"><div class="calendar-head"><h2>🔔 Prochains rappels</h2><button class="secondary" onclick="nav('reminders')">Voir tout</button></div>${upcoming.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Aucun rappel":"Rappel 24 h avant"}</div>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Confirmer sur WhatsApp</a>`:""}</div>`).join("")||'<div class="emptymsg">Aucun prochain rendez-vous.</div>'}</div>`;
@@ -468,20 +519,71 @@ function newAppointment(date=isoToday(),existing=null){
  <button style="width:100%;margin-top:12px" onclick="saveAppointment('${a.id}',${!!existing})">Enregistrer le rendez-vous</button></div>`;
  window.scrollTo(0,0);
 }
+let onlineSyncRunning=false;
+let onlineSyncDone=false;
+function parisDateTime(iso){
+  const d=new Date(iso);
+  if(isNaN(d))return {date:"",time:""};
+  return {
+    date:d.toLocaleDateString("en-CA",{timeZone:"Europe/Paris"}),
+    time:d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit",hour12:false})
+  };
+}
+async function syncOnlineAppointments(force=false){
+  if(onlineSyncRunning)return;
+  if(!authSession)return;
+  if(onlineSyncDone&&!force)return;
+  onlineSyncRunning=true;
+  try{
+    const rows=await supabaseRpc("get_professional_online_appointments",{p_admin_code:"090720"});
+    let changed=false;
+    (rows||[]).forEach(r=>{
+      const dt=parisDateTime(r.start_at);
+      const existing=data.appointments.find(a=>String(a.id)===String(r.id));
+      const base={
+        id:String(r.id),clientName:`${r.client_first_name||""} ${r.client_last_name||""}`.trim(),
+        firstName:r.client_first_name||"",lastName:r.client_last_name||"",phone:r.client_phone||"",
+        email:r.client_email||"",clientNotes:"",service:r.service_name||"",date:dt.date,time:dt.time,
+        price:Number(r.service_price)||0,deposit:Number(r.deposit)||0,status:r.status||"En attente",
+        notes:r.notes||"Réservation en ligne",reminder:r.reminder||"24h",
+        clientKey:clientKey(r.client_first_name||"",r.client_last_name||""),source:"public"
+      };
+      if(existing){
+        Object.assign(existing,base,{deposit:existing.deposit??base.deposit,reminder:existing.reminder||base.reminder,notes:existing.notes||base.notes});
+      }else{
+        data.appointments.push(base);
+        changed=true;
+      }
+      upsertClient({key:base.clientKey,name:base.clientName,firstName:base.firstName,lastName:base.lastName,phone:base.phone,email:base.email,notes:base.clientNotes});
+    });
+    if(changed)save();
+    onlineSyncDone=true;
+  }catch(e){
+    console.warn("get_professional_online_appointments",e);
+  }finally{
+    onlineSyncRunning=false;
+  }
+}
+
+async function syncPublicStatus(a){
+ if(a?.source!=="public")return;
+ const id=Number(a.id);if(!Number.isInteger(id)||id<=0)return;
+ try{await supabaseRpc("set_public_appointment_status",{p_id:id,p_phone:a.phone||"",p_status:a.status})}catch(e){console.warn("set_public_appointment_status",e)}
+}
 function saveAppointment(id,isEdit){
  const first=firstEl("first").value.trim(),last=firstEl("last").value.trim();
  if(!first&&!last){alert("Ajoute au moins le prénom ou le nom de la cliente.");return}
  const ckey=clientKey(first,last), old=data.appointments.find(x=>x.id===id);
- const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,reminder:firstEl("reminder").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
+ const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,reminder:firstEl("reminder").value,notes:firstEl("notes").value.trim(),clientKey:ckey,source:old?.source||"local"};
  const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.status!=="Annulé");
  if(conflict&&!confirm("Cette journée est déjà réservée. Enregistrer un deuxième rendez-vous ce jour-là ?"))return;
  if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
  upsertClient({key:ckey,name:a.clientName,firstName:first,lastName:last,phone:a.phone,email:a.email,notes:a.clientNotes});
- save(); location.hash="appointments"; selectedDay=a.date; render();
+ save(); syncPublicStatus(a); location.hash="appointments"; selectedDay=a.date; render();
 }
 function firstEl(id){return document.getElementById(id)}
 function editAppointment(id){let a=data.appointments.find(x=>x.id===id);if(a)newAppointment(a.date,a)}
-function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a)a.status="Annulé";save();render()}}
+function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a){a.status="Annulé";save();syncPublicStatus(a)}render()}}
 function clientsPage(){
  const clients=[...data.clients].sort((a,b)=>a.name.localeCompare(b.name));
  app.innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
