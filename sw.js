@@ -1,4 +1,4 @@
-const CACHE = "csn-v39";
+const CACHE = "csn-v40";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -8,8 +8,8 @@ self.addEventListener("install", event => {
         "./",
         "./index.html",
         "./manifest.webmanifest",
-        "./icon-192.png",
-        "./icon-512.png"
+        "./icône-192.png",
+        "./icône-512.png"
       ])
     )
   );
@@ -18,7 +18,11 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -26,22 +30,38 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
-  if (url.hostname.includes("supabase.co") || url.hostname.includes("supabase.in") || url.hostname.includes("jsdelivr.net")) return;
+
+  if (
+    url.hostname.includes("supabase.co") ||
+    url.hostname.includes("supabase.in") ||
+    url.hostname.includes("jsdelivr.net")
+  ) {
+    return;
+  }
+
   if (request.mode === "navigate" || request.destination === "document") {
     event.respondWith(
-      fetch(request).then(response => {
-        const copy=response.clone();
-        caches.open(CACHE).then(cache=>cache.put(request,copy));
-        return response;
-      }).catch(()=>caches.match(request).then(cached=>cached||caches.match("./index.html")))
+      fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+          return response;
+        })
+        .catch(() =>
+          caches.match(request).then(cached => cached || caches.match("./index.html"))
+        )
     );
     return;
   }
+
   event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
-      const copy=response.clone();
-      caches.open(CACHE).then(cache=>cache.put(request,copy));
-      return response;
-    }))
+    caches.match(request).then(cached =>
+      cached ||
+      fetch(request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(request, copy));
+        return response;
+      })
+    )
   );
 });
