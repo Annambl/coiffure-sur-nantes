@@ -39,7 +39,7 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 </head>
 <body>
 <div id="shell">
-<header><div class="brand-wrap"><img class="brand-logo" src="icon-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
+<header><div class="brand-wrap"><img class="brand-logo" src="icône-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
 <main id="app"></main>
 <nav>
 <button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
@@ -89,7 +89,7 @@ async function supabaseRpc(functionName, body){
 let authSession=null;
 let authLoading=true;
 
-const ADMIN_SHELL=`<header><div class="brand-wrap"><img class="brand-logo" src="icon-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
+const ADMIN_SHELL=`<header><div class="brand-wrap"><img class="brand-logo" src="icône-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
 <main id="app"></main>
 <nav>
 <button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
@@ -215,7 +215,7 @@ window.addEventListener("hashchange",render);
 function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
 function publicHome(){
  document.body.className="public";
- document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icon-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><button class="secondary big-book" onclick="publicStatusForm()">🔎 SUIVRE MA DEMANDE</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
+ document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icône-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><button class="secondary big-book" onclick="publicStatusForm()">🔎 SUIVRE MA DEMANDE</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
 const publicServiceDetails={
