@@ -285,10 +285,10 @@ function publicStep2(){
 }
 function publicLoadSlots(){
  const d=document.getElementById("pubdate").value; publicBooking.date=d;
- const all=["09:00","10:00","11:00","14:00","15:00","16:00","17:00"];
- const taken=data.appointments.filter(a=>a.date===d&&a.status!=="Annulé").map(a=>a.time);
- const available=all.filter(t=>!taken.includes(t));
- document.getElementById("pubslots").innerHTML=`<div class="card"><h2>Créneaux disponibles</h2>${available.length?`<div class="slotgrid">${available.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div>`:'<div class="emptymsg">Aucun créneau disponible ce jour. Choisissez une autre date.</div>'}</div>`;
+ const all=["10:00","11:00","12:00","13:00","14:00"];
+ const booked=data.appointments.some(a=>a.date===d&&a.status!=="Annulé");
+ const available=booked?[]:all;
+ document.getElementById("pubslots").innerHTML=`<div class="card"><h2>Créneaux disponibles</h2>${booked?'<div class="emptymsg">Cette journée est déjà réservée. Choisissez une autre date.</div>':`<div class="small" style="margin-bottom:10px">Horaires proposés : 10 h à 14 h</div><div class="slotgrid">${available.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div>`}</div>`;
 }
 function publicChooseTime(t){publicBooking.time=t;publicStep3()}
 function publicStep3(){
@@ -299,7 +299,7 @@ function publicConfirm(){
  if(!first||!last||!phone){alert("Merci de renseigner le prénom, le nom et le téléphone.");return}
  const price=publicBooking.service.includes("Fulani")?60:50;
  const a={id:Date.now().toString(),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
- if(data.appointments.some(x=>x.date===a.date&&x.time===a.time&&x.status!=="Annulé")){alert("Ce créneau vient d'être pris. Merci d'en choisir un autre.");publicStep2();return}
+ if(data.appointments.some(x=>x.date===a.date&&x.status!=="Annulé")){alert("Cette journée vient d'être réservée. Merci de choisir une autre date.");publicStep2();return}
  data.appointments.push(a);upsertClient({key:a.clientKey,name:a.clientName,firstName:first,lastName:last,phone,email,notes:""});save();publicSuccess(a);
 }
 function publicSuccess(a){
@@ -421,8 +421,8 @@ function saveAppointment(id,isEdit){
  if(!first&&!last){alert("Ajoute au moins le prénom ou le nom de la cliente.");return}
  const ckey=clientKey(first,last), old=data.appointments.find(x=>x.id===id);
  const a={id,clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone:firstEl("phone").value.trim(),email:firstEl("email").value.trim(),clientNotes:firstEl("clientNotes").value.trim(),service:firstEl("service").value,date:firstEl("date").value,time:firstEl("time").value,price:Number(firstEl("price").value)||0,deposit:Number(firstEl("deposit").value)||0,status:firstEl("status").value,reminder:firstEl("reminder").value,notes:firstEl("notes").value.trim(),clientKey:ckey};
- const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.time===a.time&&x.status!=="Annulé");
- if(conflict&&!confirm("Un autre rendez-vous est déjà prévu à cette heure. Enregistrer quand même ?"))return;
+ const conflict=data.appointments.some(x=>x.id!==id&&x.date===a.date&&x.status!=="Annulé");
+ if(conflict&&!confirm("Cette journée est déjà réservée. Enregistrer un deuxième rendez-vous ce jour-là ?"))return;
  if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
  upsertClient({key:ckey,name:a.clientName,firstName:first,lastName:last,phone:a.phone,email:a.email,notes:a.clientNotes});
  save(); location.hash="appointments"; selectedDay=a.date; render();
