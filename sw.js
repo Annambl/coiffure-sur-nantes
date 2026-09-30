@@ -1,4 +1,4 @@
-const CACHE = "csn-v38";
+const CACHE = "csn-v39";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
