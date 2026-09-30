@@ -18,11 +18,11 @@ button.secondary{background:var(--rose2);color:#714652}button.linkbtn{background
 input,select,textarea{width:100%;padding:15px 16px;border:1px solid #ddd5d8;border-radius:15px;background:#fff;font-size:16px;color:var(--ink)}
 textarea{min-height:88px;resize:vertical}label{display:block;font-weight:700;margin:15px 0 7px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(6,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(7,1fr);z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
 nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;font-size:13px;border-radius:12px}nav button.active{color:var(--rose);font-weight:800}
 .navicon{display:block;font-size:23px;line-height:25px}.hidden{display:none!important}
 .calendar-head{display:flex;justify-content:space-between;align-items:center}.month{font-weight:800;font-size:19px}
-.cal{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:14px}.dow{text-align:center;font-size:11px;color:#888;padding:4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}.dow{text-align:center;font-size:11px;color:#888;padding:4px}
 .day{min-height:52px;background:#fafafa;border-radius:12px;padding:7px;text-align:left;border:1px solid #eee;color:#333}.day.empty{background:transparent;border:0}.day.today{border:2px solid var(--rose)}.day.selected{background:var(--rose2);border-color:var(--rose)}.day.unavailable{background:#f7d9de;border-color:#d96b7a;color:#9b3949;font-weight:800}.day.unavailable.today{border:2px solid #9b3949}.day.unavailable.selected{background:#efc2ca;border-color:#9b3949}
 .dot{width:6px;height:6px;background:var(--rose);border-radius:50%;display:inline-block;margin-left:3px}.appt{padding:12px 0;border-bottom:1px solid #eee}.appt:last-child{border-bottom:0}
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--rose2);color:#744651;font-size:12px;font-weight:700}
@@ -97,12 +97,30 @@ const ADMIN_SHELL=`<header><div class="brand-wrap"><img class="brand-logo" src="
 <button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
 <button data-tab="budget"><span class="navicon">💰</span>Budget</button>
 <button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
+<button data-tab="services"><span class="navicon">💇🏾</span>Prestations</button>
 <button data-tab="account"><span class="navicon">🔐</span>Compte</button>
 </nav>`;
 
 const KEY="csn_v7_data";
 const OLD_KEY="csn_data";
-const services=["Knotless medium","Knotless fin épaule","Vanille twist épaule","Fulani twist épaule","Nattes collées"];
+const SERVICES_KEY="csn_services_v1";
+const DEFAULT_SERVICES=[
+ {id:"knotless-medium",name:"Knotless medium",price:50,desc:"Knotless • longueur moyenne",active:true},
+ {id:"knotless-fin-epaule",name:"Knotless fin épaule",price:50,desc:"Knotless fin • longueur épaule",active:true},
+ {id:"vanille-twist-epaule",name:"Vanille twist épaule",price:50,desc:"Vanille twist • longueur épaule",active:true},
+ {id:"fulani-twist-epaule",name:"Fulani twist épaule",price:60,desc:"Fulani twist • longueur épaule",active:true},
+ {id:"nattes-collees",name:"Nattes collées",price:50,desc:"Nattes collées",active:true}
+];
+function loadServices(){
+ let raw=localStorage.getItem(SERVICES_KEY);
+ try{const arr=raw?JSON.parse(raw):null;if(Array.isArray(arr)&&arr.length)return arr.map((x,i)=>({id:x.id||String(Date.now()+i),name:String(x.name||"Prestation"),price:Number(x.price)||0,desc:String(x.desc||""),active:x.active!==false}));}catch(_){}
+ localStorage.setItem(SERVICES_KEY,JSON.stringify(DEFAULT_SERVICES)); return DEFAULT_SERVICES.map(x=>({...x}));
+}
+function saveServices(list){localStorage.setItem(SERVICES_KEY,JSON.stringify(list));}
+let serviceCatalog=loadServices();
+let services=serviceCatalog.filter(s=>s.active).map(s=>s.name);
+function refreshServices(){serviceCatalog=loadServices();services=serviceCatalog.filter(s=>s.active).map(s=>s.name);}
+function serviceDetails(name){return serviceCatalog.find(s=>s.name===name)||{name,price:50,desc:"Prestation coiffure",active:true};}
 
 function loadData(){
   let raw=localStorage.getItem(KEY);
@@ -218,14 +236,7 @@ function publicHome(){
  document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icône-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><button class="secondary big-book" onclick="publicStatusForm()">🔎 SUIVRE MA DEMANDE</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
-const publicServiceDetails={
- "Knotless medium":{price:50,desc:"Knotless • longueur moyenne"},
- "Knotless fin épaule":{price:50,desc:"Knotless fin • longueur épaule"},
- "Vanille twist épaule":{price:50,desc:"Vanille twist • longueur épaule"},
- "Fulani twist épaule":{price:60,desc:"Fulani twist • longueur épaule"},
- "Nattes collées":{price:50,desc:"Nattes collées"}
-};
-function publicPrice(service){return Number(publicServiceDetails[service]?.price||50)}
+function publicPrice(service){return Number(serviceDetails(service).price||0)}
 function publicStepIndicator(step){
  const labels=["Prestation","Date & heure","Coordonnées"];
  return `<div class="public-steps">${labels.map((label,i)=>`<div class="public-step ${i+1===step?"active":""} ${i+1<step?"done":""}"><span>${i+1<step?"✓":i+1}</span><b>${label}</b></div>`).join("")}</div>`;
@@ -233,7 +244,7 @@ function publicStepIndicator(step){
 function publicStep1(){
  document.body.className="public";
  const list=services.map((sv,i)=>{
-   const d=publicServiceDetails[sv]||{price:50,desc:"Prestation coiffure"};
+   const d=serviceDetails(sv);
    return `<button class="public-service ${publicBooking.service===sv?"selected":""}" onclick="publicChooseService(${i})"><div class="public-service-main"><b>${esc(sv)}</b><span class="small">${esc(d.desc)}</span></div><div class="public-service-side"><strong>${euro(d.price)}</strong><span>Choisir ›</span></div></button>`;
  }).join("");
  document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre prestation</div><div class="public-sub">Quelle coiffure souhaitez-vous réserver ?</div></header><main id="app">${publicStepIndicator(1)}<div class="public-service-list">${list}</div><button class="secondary" style="width:100%;margin-top:14px" onclick="publicHome()">← Retour</button></main>`;
@@ -330,7 +341,7 @@ function publicShowSelectedDay(){
 }
 function publicChooseTime(t){publicBooking.time=t;publicStep3()}
 function publicStep3(){
- const details=publicServiceDetails[publicBooking.service]||{price:50,desc:""};
+ const details=serviceDetails(publicBooking.service);
  document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">Dernière étape avant l'envoi de votre demande</div></header><main id="app">
  ${publicStepIndicator(3)}
  <div class="card booking-summary"><div class="summary-title">Récapitulatif</div><div class="summary-row"><span>Prestation</span><b>${esc(publicBooking.service)}</b></div><div class="summary-row"><span>Date</span><b>${frDate(publicBooking.date)}</b></div><div class="summary-row"><span>Heure</span><b>${publicBooking.time}</b></div><div class="summary-row total"><span>Prix</span><strong>${euro(details.price)}</strong></div></div>
@@ -432,8 +443,29 @@ function render(){
  document.body.className="";
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
  const t=currentTab();
- if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="account") accountPage(); else homePage();
+ if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="services") servicesPage(); else if(t==="account") accountPage(); else homePage();
 }
+function servicesPage(){
+ refreshServices();
+ const active=serviceCatalog.filter(s=>s.active), inactive=serviceCatalog.filter(s=>!s.active);
+ const card=s=>`<div class="appt"><div style="display:flex;justify-content:space-between;gap:12px"><div><b>${esc(s.name)}</b><div class="small">${esc(s.desc||"Aucune description")}</div></div><strong style="color:var(--rose);white-space:nowrap">${euro(s.price)}</strong></div><div class="actions" style="margin-top:10px"><button class="secondary" onclick="editService('${esc(s.id)}')">✏️ Modifier</button><button class="danger" onclick="toggleService('${esc(s.id)}')">${s.active?'🙈 Masquer':'👁️ Réactiver'}</button><button class="danger" onclick="deleteService('${esc(s.id)}')">🗑️ Supprimer</button></div></div>`;
+ app.innerHTML=`<div class="card"><h2>💇🏾 Mes prestations</h2><div class="sub">Ces prestations apparaissent directement dans l'espace cliente.</div><button style="width:100%;margin-top:16px" onclick="editService('new')">＋ Ajouter une prestation</button></div><div class="card"><h2>Prestations visibles côté cliente</h2>${active.map(card).join("")||'<div class="emptymsg">Aucune prestation active.</div>'}</div>${inactive.length?`<div class="card"><h2>Prestations masquées</h2>${inactive.map(card).join("")}</div>`:""}`;
+}
+function editService(id){
+ refreshServices(); const existing=id==='new'?null:serviceCatalog.find(s=>s.id===id); if(id!=='new'&&!existing)return servicesPage();
+ const s=existing||{id:Date.now().toString(),name:"",price:50,desc:"",active:true};
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?'Modifier':'Nouvelle'} prestation</h2><button class="secondary" onclick="nav('services')">Annuler</button></div><label>Nom de la prestation</label><input id="serviceName" value="${esc(s.name)}" placeholder="Ex. Knotless longues"><label>Prix (€)</label><input id="servicePrice" type="number" min="0" step="0.01" value="${Number(s.price)||0}"><label>Description</label><textarea id="serviceDesc" placeholder="Description visible par la cliente">${esc(s.desc||"")}</textarea><label>Visibilité côté cliente</label><select id="serviceActive"><option value="1" ${s.active!==false?'selected':''}>Visible</option><option value="0" ${s.active===false?'selected':''}>Masquée</option></select><button style="width:100%;margin-top:14px" onclick="saveService('${esc(s.id)}',${existing?'true':'false'})">Enregistrer la prestation</button></div>`;
+ window.scrollTo(0,0);
+}
+function saveService(id,isEdit){
+ const name=(document.getElementById('serviceName')?.value||'').trim(), price=Number(document.getElementById('servicePrice')?.value||0), desc=(document.getElementById('serviceDesc')?.value||'').trim(), active=document.getElementById('serviceActive')?.value!=='0';
+ if(!name){alert('Indique le nom de la prestation.');return;} if(!Number.isFinite(price)||price<0){alert('Indique un prix valide.');return;}
+ refreshServices(); if(serviceCatalog.some(s=>s.name.toLowerCase()===name.toLowerCase()&&s.id!==id)){alert('Cette prestation existe déjà.');return;}
+ const obj={id,name,price,desc,active}; if(isEdit){const i=serviceCatalog.findIndex(s=>s.id===id);if(i<0)return;serviceCatalog[i]=obj;}else serviceCatalog.push(obj);
+ saveServices(serviceCatalog); refreshServices(); nav('services'); render();
+}
+function toggleService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;s.active=!s.active;saveServices(serviceCatalog);refreshServices();render();}
+function deleteService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;const used=data.appointments.some(a=>a.service===s.name);const msg=used?`Supprimer « ${s.name} » ? Les anciens rendez-vous garderont cette prestation, mais elle ne sera plus proposée aux nouvelles clientes.`:`Supprimer « ${s.name} » ? Elle disparaîtra aussi de l'espace cliente.`;if(!confirm(msg))return;serviceCatalog=serviceCatalog.filter(x=>x.id!==id);saveServices(serviceCatalog);refreshServices();render();}
 function accountPage(){
   app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Espace professionnel protégé par un code à 6 chiffres.</div>
     <div class="small" style="margin-top:14px">Connexion professionnelle</div><b>Code à 6 chiffres activé</b>
@@ -498,14 +530,14 @@ function appointmentsPage(){
 }
 function newAppointment(date=isoToday(),existing=null){
  if(isSunday(date)){ alert("Le dimanche, le salon est fermé. Choisissez du lundi au samedi."); return; }
- const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0],date,time:"10:00",price:50,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
+ const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0]||"",date,time:"10:00",price:serviceDetails(services[0]||"").price||0,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
  app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
  <label>Prénom</label><input id="first" value="${esc(a.firstName)}" placeholder="Prénom">
  <label>Nom</label><input id="last" value="${esc(a.lastName)}" placeholder="Nom">
  <label>📞 Téléphone</label><input id="phone" type="tel" value="${esc(a.phone)}" placeholder="06 00 00 00 00">
  <label>📧 E-mail</label><input id="email" type="email" value="${esc(a.email)}" placeholder="cliente@email.com">
  <label>📝 Notes sur la cliente</label><textarea id="clientNotes" placeholder="Préférences, habitudes, informations utiles...">${esc(a.clientNotes)}</textarea>
- <label>Prestation</label><select id="service">${services.map(s=>`<option ${s===a.service?"selected":""}>${esc(s)}</option>`).join("")}</select>
+ <label>Prestation</label><select id="service">${serviceCatalog.filter(s=>s.active||s.name===a.service).map(s=>`<option ${s.name===a.service?"selected":""}>${esc(s.name)}</option>`).join("")}</select>
  <div class="row"><div><label>Date</label><input id="date" type="date" value="${a.date}"></div><div><label>Heure</label><input id="time" type="time" value="${a.time}"></div></div>
  <div class="row"><div><label>Prix (€)</label><input id="price" type="number" step="0.01" value="${a.price}"></div><div><label>Acompte (€)</label><input id="deposit" type="number" step="0.01" value="${a.deposit}"></div></div>
  <label>Statut</label><select id="status"><option ${a.status==="Confirmé"?"selected":""}>Confirmé</option><option ${a.status==="En attente"?"selected":""}>En attente</option><option ${a.status==="Annulé"?"selected":""}>Annulé</option></select>
