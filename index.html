@@ -487,7 +487,8 @@ function apptHTML(a){
  <div class="small">${frDate(a.date)} · ${esc(a.service)} · ${euro(a.price)}</div>
  ${a.phone?`<div class="small">📞 ${esc(a.phone)}</div>`:""}
  <div class="small">🔔 ${reminderText}</div>
- <div class="actions" style="margin-top:8px">${a.status==="En attente"?`<button onclick="confirmAppointment('${esc(a.id)}')">✅ Confirmer</button>`:""}${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer confirmation WhatsApp</a>`:""}</div>
+ <div class="actions" style="margin-top:8px">${a.status==="En attente"?`<button onclick="confirmAppointment('${esc(a.id)}')">✅ Confirmer</button>`:`<button disabled>✅ Confirmé</button>`}<button class="secondary" onclick="editAppointment('${esc(a.id)}')">✏️ Modifier</button><button class="danger" onclick="cancelAppointment('${esc(a.id)}')">❌ Annuler</button></div>
+ ${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 Envoyer confirmation WhatsApp</a>`:""}
  </div>`
 }
 function waConfirm(a){
