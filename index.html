@@ -326,7 +326,7 @@ async function refreshPublicBookedSlots(){
     const start=`${y}-${String(m+1).padStart(2,"0")}-01`;
     const last=new Date(y,m+1,0).getDate();
     const end=`${y}-${String(m+1).padStart(2,"0")}-${String(last).padStart(2,"0")}`;
-    const {data:rows,error}=await supabaseClient.rpc("get_booked_slots",{p_start_date:start,p_end_date:end});
+    const {data:rows,error}=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
     if(error) throw error;
     window.publicBookedSlots=(rows||[]).map(r=>({date:r.booking_date,time:String(r.booking_time).slice(0,5)}));
     return true;
