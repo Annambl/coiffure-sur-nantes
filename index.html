@@ -147,37 +147,30 @@ function showLoginPage(message=""){
     <div class="card" style="margin-top:40px">
       <div class="lock">🔐</div>
       <h2 style="text-align:center">Espace professionnel</h2>
-      <div class="sub" style="text-align:center">Connectez-vous pour accéder à votre agenda, vos clientes et votre budget.</div>
-      <label>Adresse e-mail</label>
-      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.com">
-      <label>Mot de passe</label>
-      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
-      <div id="loginError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
-      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithSupabase()">SE CONNECTER</button>
+      <div class="sub" style="text-align:center">Entrez votre code à 6 chiffres pour accéder à votre agenda, vos clientes et votre budget.</div>
+      <label>Code professionnel</label>
+      <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="••••••" style="text-align:center;font-size:28px;letter-spacing:8px">
+      <div id="loginError" style="color:#9b3949;font-size:14px;margin-top:12px;text-align:center">${esc(message)}</div>
+      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithPin()">SE CONNECTER</button>
       <button class="secondary" style="width:100%;margin-top:10px" onclick="location.hash='#book';render()">← Retour à la prise de rendez-vous</button>
     </div>
   </main>`;
 }
-async function loginWithSupabase(){
-  const email=document.getElementById("loginEmail")?.value.trim();
-  const password=document.getElementById("loginPassword")?.value;
+function loginWithPin(){
+  const pin=document.getElementById("loginPin")?.value||"";
   const err=document.getElementById("loginError");
-  const btn=document.getElementById("loginBtn");
-  if(!email||!password){if(err)err.textContent="Renseignez votre e-mail et votre mot de passe.";return;}
-  if(btn){btn.disabled=true;btn.textContent="CONNEXION…";}
-  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){
-    if(err)err.textContent="E-mail ou mot de passe incorrect.";
-    if(btn){btn.disabled=false;btn.textContent="SE CONNECTER";}
+  if(pin !== "090720"){
+    if(err)err.textContent="Code incorrect.";
     return;
   }
-  authSession=data.session;
+  sessionStorage.setItem("csn_professional_unlocked","1");
+  authSession={user:{email:"Accès professionnel"}};
   location.hash="#home";
   restoreAdminShell();
   render();
 }
 async function logoutProfessional(){
-  await supabaseClient.auth.signOut();
+  sessionStorage.removeItem("csn_professional_unlocked");
   authSession=null;
   location.hash="#admin";
   showLoginPage();
@@ -324,38 +317,10 @@ function render(){
  if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="account") accountPage(); else homePage();
 }
 function accountPage(){
-  const email=authSession?.user?.email||"";
-  app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Compte professionnel connecté</div>
-    <div class="small" style="margin-top:14px">Adresse e-mail</div><b>${esc(email)}</b>
-  </div>
-  <div class="card"><h2>Modifier mon mot de passe</h2>
-    <div class="sub">Vous pouvez changer votre mot de passe directement ici, sans attendre un e-mail de récupération.</div>
-    <label>Nouveau mot de passe</label><input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="Au moins 8 caractères">
-    <label>Confirmer le mot de passe</label><input id="accountNewPassword2" type="password" autocomplete="new-password" placeholder="Retapez votre mot de passe">
-    <div id="accountPasswordError" style="color:#9b3949;font-size:14px;margin-top:12px"></div>
-    <button id="accountPasswordBtn" style="width:100%;margin-top:14px" onclick="changePasswordFromAccount()">MODIFIER LE MOT DE PASSE</button>
+  app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Espace professionnel protégé par un code à 6 chiffres.</div>
+    <div class="small" style="margin-top:14px">Connexion professionnelle</div><b>Code à 6 chiffres activé</b>
   </div>
   <div class="card"><button class="secondary" style="width:100%" onclick="logoutProfessional()">Se déconnecter</button></div>`;
-}
-async function changePasswordFromAccount(){
-  const p1=document.getElementById("accountNewPassword")?.value||"";
-  const p2=document.getElementById("accountNewPassword2")?.value||"";
-  const err=document.getElementById("accountPasswordError");
-  const btn=document.getElementById("accountPasswordBtn");
-  if(p1.length<8){if(err)err.textContent="Le mot de passe doit contenir au moins 8 caractères.";return;}
-  if(p1!==p2){if(err)err.textContent="Les deux mots de passe ne correspondent pas.";return;}
-  if(btn){btn.disabled=true;btn.textContent="MODIFICATION…";}
-  const {error}=await supabaseClient.auth.updateUser({password:p1});
-  if(error){
-    if(err)err.textContent=error.message||"Impossible de modifier le mot de passe.";
-    if(btn){btn.disabled=false;btn.textContent="MODIFIER LE MOT DE PASSE";}
-    return;
-  }
-  if(err){err.style.color="#39734a";err.textContent="Mot de passe modifié avec succès ✓";}
-  const a=document.getElementById("accountNewPassword");
-  const b=document.getElementById("accountNewPassword2");
-  if(a)a.value=""; if(b)b.value="";
-  if(btn){btn.disabled=false;btn.textContent="MODIFIER LE MOT DE PASSE";}
 }
 function homePage(){
  const today=isoToday(), todayA=data.appointments.filter(a=>a.date===today);
@@ -542,21 +507,19 @@ function budgetPage(){
  <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
 }
 bindNav();
-// Public booking link: add #book to the application URL. Professional area is protected by Supabase Auth.
-supabaseClient.auth.getSession().then(({data})=>{
-  authSession=data.session;
-  authLoading=false;
-  if(!isPublic() && location.hash==="#admin") showLoginPage();
-  else if(!isPublic() && !authSession) showLoginPage();
-  else render();
-}).catch(()=>{
-  authLoading=false;
-  if(!isPublic()) showLoginPage("Impossible de vérifier la connexion. Vérifiez votre connexion internet.");
-});
-supabaseClient.auth.onAuthStateChange((_event,session)=>{
-  authSession=session;
-  if(!session && !isPublic()){showLoginPage();}
-});
+// Public booking link: add #book to the application URL. Professional area uses a 6-digit access code.
+const professionalUnlocked=sessionStorage.getItem("csn_professional_unlocked")==="1";
+authLoading=false;
+if(!isPublic()){
+  if(professionalUnlocked){
+    authSession={user:{email:"Accès professionnel"}};
+    render();
+  }else{
+    showLoginPage();
+  }
+}else{
+  render();
+}
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body></html>
