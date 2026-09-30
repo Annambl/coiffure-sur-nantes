@@ -1,4 +1,4 @@
-const CACHE = "csn-v19";
+const CACHE = "csn-v20";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -30,6 +30,7 @@ self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
 
+  // Always use the network for Supabase and external APIs.
   if (
     url.hostname.includes("supabase.co") ||
     url.hostname.includes("supabase.in") ||
@@ -38,6 +39,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // HTML must be network-first so GitHub Pages updates are picked up.
   if (request.mode === "navigate" || request.destination === "document") {
     event.respondWith(
       fetch(request)
@@ -47,14 +49,13 @@ self.addEventListener("fetch", event => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then(
-            cached => cached || caches.match("./index.html")
-          )
+          caches.match(request).then(cached => cached || caches.match("./index.html"))
         )
     );
     return;
   }
 
+  // Other local files can use cache-first, with network fallback.
   event.respondWith(
     caches.match(request).then(cached =>
       cached ||
