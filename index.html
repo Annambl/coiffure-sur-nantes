@@ -318,22 +318,54 @@ async function publicConfirm(){
    const price=publicPrice(publicBooking.service);
    const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
    const endAt=new Date(startAt.getTime()+60*60*1000);
-   const {data:result,error}=await supabaseClient.rpc("create_public_appointment",{
+   const payload={
      p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
      p_service_name:publicBooking.service,p_service_price:price,
      p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
-   });
-   if(error)throw error;
+   };
+
+   // First try the Supabase JS client. If PostgREST reports a transient/schema issue,
+   // retry once through the REST RPC endpoint with the exact same payload.
+   let result=null;
+   let error=null;
+   const firstTry=await supabaseClient.rpc("create_public_appointment",payload);
+   result=firstTry.data;
+   error=firstTry.error;
+
+   if(error){
+     const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_public_appointment`,{
+       method:"POST",
+       headers:{
+         "apikey":SUPABASE_PUBLISHABLE_KEY,
+         "Authorization":`Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+         "Content-Type":"application/json",
+         "Accept":"application/json"
+       },
+       body:JSON.stringify(payload)
+     });
+     const text=await response.text();
+     if(!response.ok){
+       let body={};
+       try{body=JSON.parse(text)}catch(_){}
+       const restError=new Error(body.message||body.error||body.hint||text||`HTTP ${response.status}`);
+       restError.code=body.code||String(response.status);
+       restError.details=body.details||"";
+       throw restError;
+     }
+     try{result=JSON.parse(text)}catch(_){result=text}
+   }
+
    const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
    publicSuccess(a);
  }catch(e){
    console.error("create_public_appointment",e);
    const msg=String(e?.message||e?.details||e?.hint||"");
+   const code=String(e?.code||"");
    if(err){
      if(msg.includes("DAY_ALREADY_BOOKED"))err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
      else if(msg.includes("INVALID_CONTACT"))err.textContent="Merci de vérifier vos coordonnées.";
      else if(msg.includes("INVALID_TIME"))err.textContent="Ce créneau n'est plus disponible. Revenez au calendrier.";
-     else err.textContent="La réservation n'a pas pu être enregistrée. Vérifiez vos informations et réessayez.";
+     else err.textContent=`La réservation n'a pas pu être enregistrée (${code||"erreur"}). ${msg||"Réessayez."}`;
    }
    if(btn){btn.disabled=false;btn.textContent="ENVOYER MA DEMANDE"}
  }
