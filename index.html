@@ -44,7 +44,24 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 <button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
 </nav>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL="https://kaunnovtcujfgktyxzgji.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_A2gCiij_BTERARnkOSPj4Q_lZktqbeA";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let authSession=null;
+let authLoading=true;
+
+const ADMIN_SHELL=`<header><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></header>
+<main id="app"></main>
+<nav>
+<button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
+<button data-tab="appointments"><span class="navicon">📅</span>Rendez-vous</button>
+<button data-tab="clients"><span class="navicon">👩🏾</span>Clients</button>
+<button data-tab="budget"><span class="navicon">💰</span>Budget</button>
+<button data-tab="reminders"><span class="navicon">🔔</span>Rappels</button>
+</nav>`;
+
 const KEY="csn_v7_data";
 const OLD_KEY="csn_data";
 const services=["Knotless medium","Knotless fin épaule","Vanille twist épaule","Fulani twist épaule","Nattes collées"];
@@ -114,7 +131,54 @@ function upsertClient(c){
 }
 function nav(tab){location.hash=tab}
 function currentTab(){return location.hash.replace("#","")||"home"}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.tab));
+function bindNav(){
+  document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.tab));
+}
+function restoreAdminShell(){
+  document.getElementById("shell").innerHTML=ADMIN_SHELL;
+  bindNav();
+}
+function showLoginPage(message=""){
+  document.body.className="";
+  document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
+    <div class="card" style="margin-top:40px">
+      <div class="lock">🔐</div>
+      <h2 style="text-align:center">Espace professionnel</h2>
+      <div class="sub" style="text-align:center">Connectez-vous pour accéder à votre agenda, vos clientes et votre budget.</div>
+      <label>Adresse e-mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.com">
+      <label>Mot de passe</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
+      <div id="loginError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
+      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithSupabase()">SE CONNECTER</button>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="location.hash='#book';render()">← Retour à la prise de rendez-vous</button>
+    </div>
+  </main>`;
+}
+async function loginWithSupabase(){
+  const email=document.getElementById("loginEmail")?.value.trim();
+  const password=document.getElementById("loginPassword")?.value;
+  const err=document.getElementById("loginError");
+  const btn=document.getElementById("loginBtn");
+  if(!email||!password){if(err)err.textContent="Renseignez votre e-mail et votre mot de passe.";return;}
+  if(btn){btn.disabled=true;btn.textContent="CONNEXION…";}
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+    if(err)err.textContent="E-mail ou mot de passe incorrect.";
+    if(btn){btn.disabled=false;btn.textContent="SE CONNECTER";}
+    return;
+  }
+  authSession=data.session;
+  location.hash="#home";
+  restoreAdminShell();
+  render();
+}
+async function logoutProfessional(){
+  await supabaseClient.auth.signOut();
+  authSession=null;
+  location.hash="#admin";
+  showLoginPage();
+}
 window.addEventListener("hashchange",render);
 
 function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
@@ -156,13 +220,11 @@ function publicConfirm(){
 function publicSuccess(a){
  document.getElementById("shell").innerHTML=`<main id="app"><div class="card success"><div style="font-size:52px">🎉</div><h2>Demande de rendez-vous envoyée !</h2><p class="sub">${esc(a.service)}<br>📅 ${frDate(a.date)} à ${a.time}</p><p>Votre demande est enregistrée. Vous recevrez la confirmation de la coiffeuse.</p><button class="big-book" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
 }
-function adminLogin(){
- const code=prompt("Code professionnel :");
- if(code!=="1234"){alert("Code incorrect.");return}
- localStorage.setItem("csn_admin","1");location.hash="#home";location.reload();
-}
 function render(){
  if(isPublic()){publicHome();return;}
+ if(authLoading){return;}
+ if(!authSession){showLoginPage();return;}
+ if(!document.querySelector("nav button")) restoreAdminShell();
  document.body.className="";
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
  const t=currentTab();
@@ -175,7 +237,7 @@ function homePage(){
  app.innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
  <div class="row" style="margin-top:15px"><div><b>${todayA.length}</b><div class="small">RDV aujourd'hui</div></div><div><b>${euro(income)}</b><div class="small">CA du mois</div></div></div></div>
  <div class="card"><h2>🔔 Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
- <button onclick="newAppointment()">＋ Ajouter un rendez-vous</button>`;
+ <div class="actions" style="margin-top:12px"><button onclick="newAppointment()">＋ Ajouter un rendez-vous</button><button class="secondary" onclick="logoutProfessional()">Se déconnecter</button></div>`;
 }
 function apptHTML(a){
  const reminderText=a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant";
@@ -340,9 +402,22 @@ function budgetPage(){
  app.innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
  <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
 }
-render();
-// Public booking link: add #book to the application URL. Admin stays behind the professional entry point.
-if(!isPublic() && location.hash==="#admin") adminLogin();
+bindNav();
+// Public booking link: add #book to the application URL. Professional area is protected by Supabase Auth.
+supabaseClient.auth.getSession().then(({data})=>{
+  authSession=data.session;
+  authLoading=false;
+  if(!isPublic() && location.hash==="#admin") showLoginPage();
+  else if(!isPublic() && !authSession) showLoginPage();
+  else render();
+}).catch(()=>{
+  authLoading=false;
+  if(!isPublic()) showLoginPage("Impossible de vérifier la connexion. Vérifiez votre connexion internet.");
+});
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  authSession=session;
+  if(!session && !isPublic()){showLoginPage();}
+});
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body></html>
