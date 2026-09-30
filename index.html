@@ -29,7 +29,9 @@ nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;fon
 .emptymsg{color:#777;text-align:center;padding:25px 5px}
 a.link{color:var(--rose);font-weight:700;text-decoration:none}
 
-.public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.public-cal .cal{grid-template-columns:repeat(6,1fr);gap:6px}.public-cal .day{min-height:56px;font-size:15px}.public-cal .day.available{background:#fff;border-color:#eee}.public-cal .day.closed{background:#f7f7f7;color:#aaa}.public-cal .day.booked{background:#f7d9de;border-color:#d96b7a;color:#9b3949;font-weight:800}.public-cal .day.partial{background:#fff2f4;border-color:#e7a6b0;color:#9b3949}.public-cal .day.selected{background:var(--rose2);border-color:var(--rose)}.public-cal .day.booked.selected{background:#efc2ca;border-color:#9b3949}.public-slots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.public-slots button{background:#f5e4e7;color:#714652}.public-slots button.booked{background:#f3c8cf;color:#9b3949;border:1px solid #d96b7a;text-decoration:line-through}.public-slots button:disabled{opacity:1}.public-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#777}.legend-item{display:flex;align-items:center;gap:6px}.legend-dot{width:12px;height:12px;border-radius:4px;background:#fff;border:1px solid #ddd}.legend-dot.red{background:#f7d9de;border-color:#d96b7a}.public-note{font-size:13px;color:#777}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
+.public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
+
+.public-cal{margin-top:12px}.public-cal .day{min-height:42px}.public-cal .day:not(.unavailable){background:#eef8ef;color:#39734a}.public-cal .day.unavailable{background:#f7dfe2;color:#a33a4b;cursor:not-allowed}.public-cal .day.selected{outline:2px solid #9b5264;outline-offset:-2px}.public-cal .day.today{font-weight:800}.public-cal .day.empty{background:transparent}
 </style>
 </head>
 <body>
@@ -143,16 +145,19 @@ function showLoginPage(message=""){
   document.body.className="";
   document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
     <div class="card" style="margin-top:40px">
-      <div class="lock">🔐</div><h2 style="text-align:center">Espace professionnel</h2>
-      <div class="sub" style="text-align:center">Entrez votre code professionnel à 6 chiffres pour accéder à votre agenda, vos clientes et votre budget.</div>
-      <label>Code professionnel</label>
-      <input id="loginCode" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="••••••" style="text-align:center;font-size:26px;letter-spacing:8px">
+      <div class="lock">🔐</div>
+      <h2 style="text-align:center">Espace professionnel</h2>
+      <div class="sub" style="text-align:center">Connectez-vous pour accéder à votre agenda, vos clientes et votre budget.</div>
+      <label>Adresse e-mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.com">
+      <label>Mot de passe</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
       <div id="loginError" style="color:#9b3949;font-size:14px;margin-top:12px">${esc(message)}</div>
-      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithCode()">SE CONNECTER</button>
+      <button id="loginBtn" style="width:100%;margin-top:14px" onclick="loginWithSupabase()">SE CONNECTER</button>
+      <button class="linkbtn" style="width:100%;margin-top:10px" onclick="showForgotPage()">Mot de passe oublié ?</button>
       <button class="secondary" style="width:100%;margin-top:10px" onclick="location.hash='#book';render()">← Retour à la prise de rendez-vous</button>
-    </div></main>`;
-  const input=document.getElementById("loginCode");
-  if(input){input.addEventListener("input",()=>input.value=input.value.replace(/\D/g,"").slice(0,6));input.addEventListener("keydown",e=>{if(e.key==="Enter")loginWithCode();});setTimeout(()=>input.focus(),100);}
+    </div>
+  </main>`;
 }
 function showForgotPage(message=""){
   document.body.className="";
@@ -233,78 +238,30 @@ async function updatePassword(){
   location.hash="#admin";
   showLoginPage("Mot de passe modifié. Vous pouvez maintenant vous connecter.");
 }
-async function adminRpc(name,args={}){
-  const pin=sessionStorage.getItem("csn_professional_pin")||"";
-  return supabaseClient.rpc(name,{p_pin:pin,...args});
+async function loginWithSupabase(){
+  const email=document.getElementById("loginEmail")?.value.trim();
+  const password=document.getElementById("loginPassword")?.value;
+  const err=document.getElementById("loginError");
+  const btn=document.getElementById("loginBtn");
+  if(!email||!password){if(err)err.textContent="Renseignez votre e-mail et votre mot de passe.";return;}
+  if(btn){btn.disabled=true;btn.textContent="CONNEXION…";}
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+    if(err)err.textContent="E-mail ou mot de passe incorrect.";
+    if(btn){btn.disabled=false;btn.textContent="SE CONNECTER";}
+    return;
+  }
+  authSession=data.session;
+  location.hash="#home";
+  restoreAdminShell();
+  render();
 }
-function mapCloudAppointment(r){
- return {
-   id:String(r.id),clientName:r.client_name||((r.first_name||"")+" "+(r.last_name||"")).trim(),
-   firstName:r.first_name||"",lastName:r.last_name||"",phone:r.phone||"",email:r.email||"",
-   clientNotes:r.client_notes||"",service:r.service||services[0],date:r.booking_date,time:String(r.booking_time||"").slice(0,5),
-   price:Number(r.price||0),deposit:Number(r.deposit||0),status:r.status||"En attente",notes:r.notes||"",reminder:r.reminder||"24h",
-   clientKey:clientKey(r.first_name||"",r.last_name||"")
- };
+async function logoutProfessional(){
+  await supabaseClient.auth.signOut();
+  authSession=null;
+  location.hash="#admin";
+  showLoginPage();
 }
-async function loadCloudAppointments(){
-  cloudSyncBusy=true;
-  try{
-    const {data:rows,error}=await adminRpc("admin_list_appointments");
-    if(error) throw error;
-    const cloud=(rows||[]).map(mapCloudAppointment);
-    if(!sessionStorage.getItem("csn_cloud_migrated_v23") && data.appointments.length){
-      for(const a of data.appointments){
-        await adminRpc("admin_upsert_appointment",{
-          p_id:Number(a.id)||null,p_client_name:a.clientName||"",p_first_name:a.firstName||"",p_last_name:a.lastName||"",
-          p_phone:a.phone||"",p_email:a.email||null,p_client_notes:a.clientNotes||"",p_service:a.service||services[0],
-          p_date:a.date,p_time:a.time,p_price:Number(a.price||0),p_deposit:Number(a.deposit||0),p_status:a.status||"En attente",
-          p_reminder:a.reminder||"24h",p_notes:a.notes||""
-        });
-      }
-      sessionStorage.setItem("csn_cloud_migrated_v23","1");
-      const again=await adminRpc("admin_list_appointments");
-      if(!again.error) cloud.splice(0,cloud.length,...(again.data||[]).map(mapCloudAppointment));
-    }
-    data.appointments=cloud;
-    const byKey=new Map();
-    data.clients.forEach(c=>byKey.set(c.key,c));
-    data.appointments.forEach(a=>{if(a.clientKey){const old=byKey.get(a.clientKey)||{key:a.clientKey};byKey.set(a.clientKey,{...old,name:a.clientName,firstName:a.firstName,lastName:a.lastName,phone:a.phone,email:a.email,notes:a.clientNotes});}});
-    data.clients=[...byKey.values()];
-    save();
-    return true;
-  }catch(e){
-    console.warn("Synchronisation Supabase impossible",e);
-    return false;
-  }finally{cloudSyncBusy=false;}
-}
-async function pushAppointmentToCloud(a){
-  try{
-    const {data:id,error}=await adminRpc("admin_upsert_appointment",{
-      p_id:Number(a.id)||null,p_client_name:a.clientName||"",p_first_name:a.firstName||"",p_last_name:a.lastName||"",
-      p_phone:a.phone||"",p_email:a.email||null,p_client_notes:a.clientNotes||"",p_service:a.service||services[0],
-      p_date:a.date,p_time:a.time,p_price:Number(a.price||0),p_deposit:Number(a.deposit||0),p_status:a.status||"En attente",
-      p_reminder:a.reminder||"24h",p_notes:a.notes||""
-    });
-    if(error) throw error;
-    if(id && String(id)!==String(a.id)) a.id=String(id);
-    return true;
-  }catch(e){console.warn("Enregistrement Supabase impossible",e);return false;}
-}
-async function cancelAppointmentCloud(id){
-  try{const {error}=await adminRpc("admin_cancel_appointment",{p_id:Number(id)});if(error)throw error;return true;}catch(e){console.warn(e);return false;}
-}
-async function loginWithCode(){
-  const code=document.getElementById("loginCode")?.value||""; const err=document.getElementById("loginError"); const btn=document.getElementById("loginBtn");
-  if(!/^\d{6}$/.test(code)){if(err)err.textContent="Entrez un code de 6 chiffres.";return;}
-  if(code!=="090720"){if(err)err.textContent="Code incorrect.";if(btn){btn.disabled=false;btn.textContent="SE CONNECTER";}return;}
-  if(btn){btn.disabled=true;btn.textContent="CHARGEMENT…";}
-  sessionStorage.setItem("csn_professional_access","1");
-  sessionStorage.setItem("csn_professional_pin",code);
-  authSession={codeAccess:true};
-  await loadCloudAppointments();
-  location.hash="#home"; restoreAdminShell(); render();
-}
-function logoutProfessional(){sessionStorage.removeItem("csn_professional_access");sessionStorage.removeItem("csn_professional_pin");sessionStorage.removeItem("csn_cloud_migrated_v23");authSession=null;location.hash="#admin";showLoginPage();}
 window.addEventListener("hashchange",render);
 
 function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
@@ -317,108 +274,126 @@ function publicHome(){
  document.getElementById("shell").innerHTML=`<header><div class="public-logo">💇🏾‍♀️</div><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
-window.publicBookedSlots=[];
-let cloudSyncBusy=false;
-
-async function refreshPublicBookedSlots(){
-  try{
-    const y=publicCalDate.getFullYear(), m=publicCalDate.getMonth();
-    const start=`${y}-${String(m+1).padStart(2,"0")}-01`;
-    const last=new Date(y,m+1,0).getDate();
-    const end=`${y}-${String(m+1).padStart(2,"0")}-${String(last).padStart(2,"0")}`;
-    const {data:rows,error}=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
-    if(error) throw error;
-    window.publicBookedSlots=(rows||[]).map(r=>({date:r.booking_date,time:String(r.booking_time).slice(0,5)}));
-    return true;
-  }catch(e){
-    console.warn("Disponibilités Supabase indisponibles",e);
-    window.publicBookedSlots=[];
-    return false;
-  }
-}
 function publicStep1(){
  document.body.className="public";
- const list=services.map((s,i)=>`<div class="card choice"><div><b>${esc(s)}</b><div class="small">Choisir cette prestation</div></div><button onclick="publicChooseService(${i})">Choisir</button></div>`).join("");
+ const list=services.map((sv,i)=>`<div class="card choice"><div><b>${esc(sv)}</b><div class="small">Choisir cette prestation</div></div><button onclick="publicChooseService(${i})">Choisir</button></div>`).join("");
  document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre prestation</div><div class="public-sub">Coiffure sur Nantes</div></header><main id="app">${list}<button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">← Retour</button></main>`;
 }
-function publicChooseService(i){publicBooking.service=services[i];publicStep2()}
-function publicStep2(){
- const today=isoToday();
- let initial=publicBooking.date||today;
- if(isSunday(initial)){ const d=new Date(initial+"T12:00:00"); d.setDate(d.getDate()+1); initial=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
- publicBooking.date=initial;
- publicBooking.time="";
- document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre date</div><div class="public-sub">${esc(publicBooking.service)}</div></header><main id="app"><div class="card public-cal"><div class="calendar-head"><button class="secondary" onclick="publicCalPrev()">‹</button><div class="month" id="pubMonth"></div><button class="secondary" onclick="publicCalNext()">›</button></div><div class="cal" id="pubCal"></div><div class="public-legend" style="margin-top:12px"><div class="legend-item"><span class="legend-dot"></span> Disponible</div><div class="legend-item"><span class="legend-dot red"></span> Réservé</div></div><div class="public-note" style="margin-top:8px">Le dimanche, le salon est fermé. Les créneaux rouges sont déjà réservés. Un jour reste disponible tant qu’il reste au moins un créneau.</div></div><div id="pubslots"></div><button class="secondary" style="width:100%;margin-top:10px" onclick="publicStep1()">← Retour</button></main>`;
- publicRenderCalendar();
-}
-let publicCalDate=new Date();
-function publicMonthKey(){return `${publicCalDate.getFullYear()}-${String(publicCalDate.getMonth()+1).padStart(2,"0")}`}
-function publicCalPrev(){publicCalDate.setMonth(publicCalDate.getMonth()-1);publicRenderCalendar()}
-function publicCalNext(){publicCalDate.setMonth(publicCalDate.getMonth()+1);publicRenderCalendar()}
-async function publicRenderCalendar(){
- const y=publicCalDate.getFullYear(),m=publicCalDate.getMonth();
- const monthStart=new Date(y,m,1),days=new Date(y,m+1,0).getDate();
- const start=(monthStart.getDay()+6)%7;
- document.getElementById("pubMonth").textContent=publicCalDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+function publicChooseService(i){publicBooking.service=services[i];publicBooking.time="";publicStep2()}
+function publicCalendarMonth(y,m){
+ const first=new Date(y,m,1), days=new Date(y,m+1,0).getDate();
+ const start=(first.getDay()+6)%7;
  const names=["Lun","Mar","Mer","Jeu","Ven","Sam"];
  let cells=names.map(x=>`<div class="dow">${x}</div>`).join("");
- for(let i=0;i<Math.min(start,6);i++)cells+='<div class="day empty"></div>';
- const loaded=await refreshPublicBookedSlots();
+ for(let i=0;i<start;i++)cells+='<div class="day empty"></div>';
  for(let d=1;d<=days;d++){
    const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
    const dow=new Date(y,m,d).getDay();
    if(dow===0)continue;
-   const past=ds<isoToday();
-   const bookedTimes=(window.publicBookedSlots||[]).filter(x=>x.date===ds).map(x=>x.time);
-   const fullyBooked=bookedTimes.length>=5;
-   const partiallyBooked=bookedTimes.length>0;
-   const selected=ds===publicBooking.date;
-   const cls=`day ${past?"closed":"available"} ${fullyBooked?"booked":""} ${partiallyBooked&&!fullyBooked?"partial":""} ${selected?"selected":""}`;
-   const mark=fullyBooked?'<span class="small" style="display:block;color:#9b3949;margin-top:3px">Complet</span>':partiallyBooked?'<span class="small" style="display:block;color:#9b3949;margin-top:3px">Créneau réservé</span>':'';
-   cells+=`<button class="${cls}" ${past||fullyBooked?"disabled":""} onclick="publicPickDate('${ds}')"><b>${d}</b>${mark}</button>`;
+   const state=publicAvailability[ds]||"loading";
+   const cls=`day ${ds===isoToday()?"today":""} ${ds===publicBooking.date?"selected":""} ${state==="booked"?"unavailable":""}`;
+   cells+=`<button class="${cls}" ${state==="booked"?"disabled":""} onclick="publicSelectDate('${ds}')" title="${state==='booked'?'Réservé':'Disponible'}">${d}</button>`;
  }
- document.getElementById("pubCal").innerHTML=cells;
- document.getElementById("pubslots").innerHTML=loaded?"":'<div class="card emptymsg">Impossible de charger les disponibilités. Réessayez dans un instant.</div>';
- if(loaded) publicLoadSlots();
+ return `<div class="cal public-cal">${cells}</div>`;
 }
-function publicIsDateBooked(ds){
- return (window.publicBookedSlots||[]).some(x=>x.date===ds);
+let publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let publicAvailability={};
+async function publicStep2(){
+ publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+ const today=isoToday();
+ if(isSunday(publicBooking.date)||!publicBooking.date) publicBooking.date="";
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre date</div><div class="public-sub">${esc(publicBooking.service)}</div></header><main id="app">
+ <div class="card"><div class="calendar-head"><button class="secondary" onclick="publicChangeMonth(-1)">‹</button><div id="publicMonth" class="month"></div><button class="secondary" onclick="publicChangeMonth(1)">›</button></div>${publicCalendarMonth(publicCalendarCursor.getFullYear(),publicCalendarCursor.getMonth())}</div>
+ <div class="small" style="margin:0 4px 10px">🟢 Disponible &nbsp; 🔴 Réservé</div>
+ <div id="pubslots"></div>
+ <button class="secondary" style="width:100%;margin-top:10px" onclick="publicStep1()">← Retour</button></main>`;
+ await publicLoadAvailability();
 }
-function publicLoadSlots(){
- const d=publicBooking.date;
+async function publicChangeMonth(delta){
+ publicCalendarCursor.setMonth(publicCalendarCursor.getMonth()+delta);
+ publicRenderCalendar();
+ await publicLoadAvailability();
+}
+function publicRenderCalendar(){
+ const y=publicCalendarCursor.getFullYear(),m=publicCalendarCursor.getMonth();
+ const title=new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+ const el=document.getElementById("publicMonth"); if(el)el.textContent=title.charAt(0).toUpperCase()+title.slice(1);
+ const cal=document.querySelector(".public-cal"); if(cal)cal.outerHTML=publicCalendarMonth(y,m);
+}
+async function publicLoadAvailability(){
+ const host=document.getElementById("pubslots");
+ if(host)host.innerHTML='<div class="card"><div class="emptymsg">Chargement des disponibilités…</div></div>';
+ const y=publicCalendarCursor.getFullYear(),m=publicCalendarCursor.getMonth();
+ const start=`${y}-${String(m+1).padStart(2,"0")}-01`;
+ const endDate=new Date(y,m+1,0);
+ const end=`${y}-${String(m+1).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;
+ try{
+   let {data:rows,error}=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
+   if(error){
+     const fallback=await supabaseClient.rpc("get_booked_dates",{p_from:start,p_to:end});
+     if(fallback.error)throw error;
+     rows=fallback.data||[];
+   }
+   publicAvailability={};
+   (rows||[]).forEach(r=>{ if(r.booking_date)publicAvailability[r.booking_date]="booked"; });
+   publicRenderCalendar();
+   if(publicBooking.date && publicAvailability[publicBooking.date]==="booked")publicBooking.date="";
+   publicShowSelectedDay();
+ }catch(e){
+   console.error("get_booked_slots_public",e);
+   publicAvailability={};
+   publicRenderCalendar();
+   if(host)host.innerHTML='<div class="card"><div class="emptymsg">Impossible de charger les disponibilités. Réessayez dans un instant.</div></div>';
+ }
+}
+function publicSelectDate(ds){
+ if(isSunday(ds)||publicAvailability[ds]==="booked")return;
+ publicBooking.date=ds;publicBooking.time="";publicShowSelectedDay();
+}
+function publicShowSelectedDay(){
+ const host=document.getElementById("pubslots");
+ if(!host)return;
+ if(!publicBooking.date){host.innerHTML='<div class="card"><div class="emptymsg">Choisissez une date disponible.</div></div>';return;}
  const all=["10:00","11:00","12:00","13:00","14:00"];
- const bookedTimes=(window.publicBookedSlots||[]).filter(x=>x.date===d).map(x=>x.time);
- const html=`<div class="card"><h2>Créneaux du ${frDate(d)}</h2><div class="small" style="margin-bottom:10px">Les créneaux rouges sont déjà réservés.</div><div class="public-slots">${all.map(t=>{const b=bookedTimes.includes(t);return `<button class="${b?"booked":""} ${publicBooking.time===t?"selected":""}" ${b?"disabled":""} onclick="publicChooseTime('${t}')">${t}${b?" · Réservé":""}</button>`}).join("")}</div>${bookedTimes.length===all.length?'<div class="emptymsg">Tous les créneaux de cette journée sont réservés.</div>':''}</div>`;
- document.getElementById("pubslots").innerHTML=html;
+ host.innerHTML=`<div class="card"><h2>${frDate(publicBooking.date)}</h2><div class="small" style="margin-bottom:10px">Créneaux disponibles · 10 h à 14 h</div><div class="slotgrid">${all.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div></div>`;
 }
-function publicPickDate(ds){publicBooking.date=ds;publicBooking.time="";publicRenderCalendar()}
-
 function publicChooseTime(t){publicBooking.time=t;publicStep3()}
 function publicStep3(){
- document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">${esc(publicBooking.service)} · ${frDate(publicBooking.date)} à ${publicBooking.time}</div></header><main id="app"><div class="card"><label>Prénom *</label><input id="pf" placeholder="Prénom"><label>Nom *</label><input id="pl" placeholder="Nom"><label>Téléphone *</label><input id="pp" type="tel" placeholder="06 00 00 00 00"><label>E-mail</label><input id="pe" type="email" placeholder="cliente@email.com"><button style="width:100%;margin-top:16px" onclick="publicConfirm()">CONFIRMER MON RENDEZ-VOUS</button></div><button class="secondary" style="width:100%" onclick="publicStep2()">← Retour</button></main>`;
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">${esc(publicBooking.service)} · ${frDate(publicBooking.date)} à ${publicBooking.time}</div></header><main id="app"><div class="card"><label>Prénom *</label><input id="pf" placeholder="Prénom"><label>Nom *</label><input id="pl" placeholder="Nom"><label>Téléphone *</label><input id="pp" type="tel" placeholder="06 00 00 00 00"><label>E-mail</label><input id="pe" type="email" placeholder="cliente@email.com"><div id="pubConfirmError" class="small" style="color:#9b3949;margin-top:10px"></div><button id="pubConfirmBtn" style="width:100%;margin-top:16px" onclick="publicConfirm()">CONFIRMER MON RENDEZ-VOUS</button></div><button class="secondary" style="width:100%" onclick="publicStep2()">← Retour</button></main>`;
 }
 async function publicConfirm(){
  const first=document.getElementById("pf").value.trim(),last=document.getElementById("pl").value.trim(),phone=document.getElementById("pp").value.trim(),email=document.getElementById("pe").value.trim();
- if(!first||!last||!phone){alert("Merci de renseigner le prénom, le nom et le téléphone.");return}
- const price=publicBooking.service.includes("Fulani")?60:50;
- const btn=document.querySelector('#app button:not(.secondary)');
- if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…";}
- const {data:bookingId,error}=await supabaseClient.rpc("create_public_booking",{
-   p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
-   p_service:publicBooking.service,p_date:publicBooking.date,p_time:publicBooking.time
- });
- if(error){
-   const msg=(error.message||"").toLowerCase();
-   if(msg.includes("slot_taken")||msg.includes("déjà")||msg.includes("already")) alert("Ce créneau vient d'être réservé. Choisissez une autre heure.");
-   else alert("Impossible d'enregistrer le rendez-vous pour le moment. Vérifiez votre connexion puis réessayez.");
-   await publicRenderCalendar();
-   return;
+ const err=document.getElementById("pubConfirmError"),btn=document.getElementById("pubConfirmBtn");
+ if(!first||!last||!phone){if(err)err.textContent="Merci de renseigner le prénom, le nom et le téléphone.";return}
+ if(!publicBooking.date||!publicBooking.time){if(err)err.textContent="Choisissez une date et un créneau.";return}
+ if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…"}
+ try{
+   const price=publicBooking.service.includes("Fulani")?60:50;
+   let result,error;
+   ({data:result,error}=await supabaseClient.rpc("create_public_booking",{
+     p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
+     p_service_name:publicBooking.service,p_booking_date:publicBooking.date,p_booking_time:publicBooking.time
+   }));
+   if(error){
+     const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
+     const endAt=new Date(startAt.getTime()+60*60*1000);
+     const fallback=await supabaseClient.rpc("create_public_appointment",{
+       p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
+       p_service_name:publicBooking.service,p_service_price:price,
+       p_start_at:startAt.toISOString(),p_end_at:endAt.toISOString()
+     });
+     if(fallback.error)throw error;
+     result=fallback.data;
+   }
+   const a={id:String(result?.id||result||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
+   publicSuccess(a);
+ }catch(e){
+   console.error("create_public_booking",e);
+   if(err)err.textContent="Ce créneau vient peut-être d'être réservé. Revenez au calendrier et choisissez une autre disponibilité.";
+   if(btn){btn.disabled=false;btn.textContent="CONFIRMER MON RENDEZ-VOUS"}
  }
- const a={id:String(bookingId||Date.now()),clientName:(first+" "+last).trim(),firstName:first,lastName:last,phone,email,clientNotes:"",service:publicBooking.service,date:publicBooking.date,time:publicBooking.time,price,deposit:0,status:"En attente",notes:"Réservation en ligne",reminder:"24h",clientKey:clientKey(first,last)};
- data.appointments.push(a);upsertClient({key:a.clientKey,name:a.clientName,firstName:first,lastName:last,phone,email,notes:""});save();
- window.publicBookedSlots.push({date:a.date,time:a.time});
- publicSuccess(a);
 }
+
 function publicSuccess(a){
  document.getElementById("shell").innerHTML=`<main id="app"><div class="card success"><div style="font-size:52px">🎉</div><h2>Demande de rendez-vous envoyée !</h2><p class="sub">${esc(a.service)}<br>📅 ${frDate(a.date)} à ${a.time}</p><p>Votre demande est enregistrée. Vous recevrez la confirmation de la coiffeuse.</p><button class="big-book" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
 }
@@ -434,7 +409,17 @@ function render(){
  if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="account") accountPage(); else homePage();
 }
 function accountPage(){
-  app.innerHTML=`<div class="card"><h2>🔐 Mon espace professionnel</h2><div class="sub">Accès protégé par votre code professionnel à 6 chiffres.</div></div>
+  const email=authSession?.user?.email||"";
+  app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Compte professionnel connecté</div>
+    <div class="small" style="margin-top:14px">Adresse e-mail</div><b>${esc(email)}</b>
+  </div>
+  <div class="card"><h2>Modifier mon mot de passe</h2>
+    <div class="sub">Vous pouvez changer votre mot de passe directement ici, sans attendre un e-mail de récupération.</div>
+    <label>Nouveau mot de passe</label><input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="Au moins 8 caractères">
+    <label>Confirmer le mot de passe</label><input id="accountNewPassword2" type="password" autocomplete="new-password" placeholder="Retapez votre mot de passe">
+    <div id="accountPasswordError" style="color:#9b3949;font-size:14px;margin-top:12px"></div>
+    <button id="accountPasswordBtn" style="width:100%;margin-top:14px" onclick="changePasswordFromAccount()">MODIFIER LE MOT DE PASSE</button>
+  </div>
   <div class="card"><button class="secondary" style="width:100%" onclick="logoutProfessional()">Se déconnecter</button></div>`;
 }
 async function changePasswordFromAccount(){
@@ -544,13 +529,11 @@ function saveAppointment(id,isEdit){
  if(conflict&&!confirm("Cette journée est déjà réservée. Enregistrer un deuxième rendez-vous ce jour-là ?"))return;
  if(isEdit){let i=data.appointments.findIndex(x=>x.id===id);data.appointments[i]=a}else data.appointments.push(a);
  upsertClient({key:ckey,name:a.clientName,firstName:first,lastName:last,phone:a.phone,email:a.email,notes:a.clientNotes});
- save();
- pushAppointmentToCloud(a).then(ok=>{if(!ok) alert("Le rendez-vous est enregistré sur ce téléphone, mais la synchronisation en ligne a échoué. Vérifiez votre connexion.");});
- location.hash="appointments"; selectedDay=a.date; render();
+ save(); location.hash="appointments"; selectedDay=a.date; render();
 }
 function firstEl(id){return document.getElementById(id)}
 function editAppointment(id){let a=data.appointments.find(x=>x.id===id);if(a)newAppointment(a.date,a)}
-function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a){a.status="Annulé";save();cancelAppointmentCloud(id).then(ok=>{if(!ok)alert("L'annulation est enregistrée sur ce téléphone, mais la synchronisation en ligne a échoué.");});}render()}}
+function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a)a.status="Annulé";save();render()}}
 function clientsPage(){
  const clients=[...data.clients].sort((a,b)=>a.name.localeCompare(b.name));
  app.innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
@@ -644,12 +627,24 @@ function budgetPage(){
  <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
 }
 bindNav();
-// Public booking link: add #book to the application URL. Professional area is protected by a 6-digit code.
-const professionalAccess=sessionStorage.getItem("csn_professional_access")==="1"; authLoading=false;
-if(isRecoveryFlow()){showResetPasswordPage();}
-else if(!isPublic() && location.hash==="#admin"){if(professionalAccess){authSession={codeAccess:true};loadCloudAppointments().finally(()=>{location.hash="#home";restoreAdminShell();render();});}else showLoginPage();}
-else if(!isPublic() && !professionalAccess){showLoginPage();}
-else{if(professionalAccess){authSession={codeAccess:true};loadCloudAppointments().finally(()=>render());}else render();}
+// Public booking link: add #book to the application URL. Professional area is protected by Supabase Auth.
+supabaseClient.auth.getSession().then(({data})=>{
+  authSession=data.session;
+  authLoading=false;
+  if(isRecoveryFlow()){showResetPasswordPage();}
+  else if(!isPublic() && location.hash==="#admin") showLoginPage();
+  else if(!isPublic() && !authSession) showLoginPage();
+  else render();
+}).catch(()=>{
+  authLoading=false;
+  if(isRecoveryFlow()) showResetPasswordPage("Ouvrez le lien de réinitialisation reçu par e-mail.");
+  else if(!isPublic()) showLoginPage("Impossible de vérifier la connexion. Vérifiez votre connexion internet.");
+});
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  authSession=session;
+  if(_event==="PASSWORD_RECOVERY"){showResetPasswordPage();return;}
+  if(!session && !isPublic() && !isRecoveryFlow()){showLoginPage();}
+});
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body></html>
