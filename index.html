@@ -33,6 +33,8 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 .public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
 
 .public-cal{margin-top:12px}.public-cal .day{min-height:42px}.public-cal .day:not(.unavailable){background:#eef8ef;color:#39734a}.public-cal .day.unavailable{background:#f7dfe2;color:#a33a4b;cursor:not-allowed}.public-cal .day.selected{outline:2px solid #9b5264;outline-offset:-2px}.public-cal .day.today{font-weight:800}.public-cal .day.empty{background:transparent}
+
+.public-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:4px 0 16px}.public-step{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;color:#aaa;font-size:10px}.public-step span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#eee;color:#777;font-weight:800}.public-step.active{color:var(--rose)}.public-step.active span{background:var(--rose);color:#fff}.public-step.done{color:#5f8b6a}.public-step.done span{background:#e2f1e5;color:#39734a}.public-service-list{display:grid;gap:10px}.public-service{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#fff;color:var(--ink);border:1px solid #eee1e4;border-radius:18px;padding:16px;box-shadow:0 2px 10px #00000006}.public-service.selected{border-color:var(--rose);background:var(--rose2)}.public-service-main{display:flex;flex-direction:column;gap:5px}.public-service-main b{font-size:16px}.public-service-side{display:flex;flex-direction:column;align-items:flex-end;gap:5px;white-space:nowrap}.public-service-side strong{font-size:16px;color:var(--rose)}.public-service-side span{font-size:12px;color:#777}.availability-legend{display:flex;justify-content:center;gap:20px;font-size:12px;color:#777;margin:4px 0 12px}.public-cal .day.past{background:#f1f1f1;color:#aaa;border-color:#eee}.selected-date-card{border:2px solid #ead1d7}.booking-summary{background:#fff9fa;border:1px solid #f0dce1}.summary-title{font-weight:900;font-size:17px;margin-bottom:12px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eee6e8;font-size:14px}.summary-row span{color:#777}.summary-row.total{border-bottom:0;padding-bottom:0;font-size:16px}.summary-row.total strong{color:var(--rose);font-size:20px}.form-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:4px}.form-error{color:#9b3949;font-size:13px;margin-top:10px;line-height:1.4}.public-logo-img{width:82px;height:82px;border-radius:22px;object-fit:cover;box-shadow:0 5px 20px #00000012}
 </style>
 </head>
 <body>
@@ -184,25 +186,44 @@ function publicHome(){
  document.getElementById("shell").innerHTML=`<header><img class="public-logo-img" src="icon-512.png" alt="Logo Coiffure sur Nantes"><div class="public-title">Coiffure sur Nantes</div><div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div></header><main id="app"><div class="card"><button class="big-book" onclick="publicStep1()">📅 PRENDRE RENDEZ-VOUS</button><a class="public-link" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Une question ? Contactez-moi sur WhatsApp</a></div><div class="admin-note">Espace cliente • Coiffure sur Nantes</div></main>`;
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
+const publicServiceDetails={
+ "Knotless medium":{price:50,desc:"Knotless • longueur moyenne"},
+ "Knotless fin épaule":{price:50,desc:"Knotless fin • longueur épaule"},
+ "Vanille twist épaule":{price:50,desc:"Vanille twist • longueur épaule"},
+ "Fulani twist épaule":{price:60,desc:"Fulani twist • longueur épaule"},
+ "Nattes collées":{price:50,desc:"Nattes collées"}
+};
+function publicPrice(service){return Number(publicServiceDetails[service]?.price||50)}
+function publicStepIndicator(step){
+ const labels=["Prestation","Date & heure","Coordonnées"];
+ return `<div class="public-steps">${labels.map((label,i)=>`<div class="public-step ${i+1===step?"active":""} ${i+1<step?"done":""}"><span>${i+1<step?"✓":i+1}</span><b>${label}</b></div>`).join("")}</div>`;
+}
 function publicStep1(){
  document.body.className="public";
- const list=services.map((sv,i)=>`<div class="card choice"><div><b>${esc(sv)}</b><div class="small">Choisir cette prestation</div></div><button onclick="publicChooseService(${i})">Choisir</button></div>`).join("");
- document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre prestation</div><div class="public-sub">Coiffure sur Nantes</div></header><main id="app">${list}<button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">← Retour</button></main>`;
+ const list=services.map((sv,i)=>{
+   const d=publicServiceDetails[sv]||{price:50,desc:"Prestation coiffure"};
+   return `<button class="public-service ${publicBooking.service===sv?"selected":""}" onclick="publicChooseService(${i})"><div class="public-service-main"><b>${esc(sv)}</b><span class="small">${esc(d.desc)}</span></div><div class="public-service-side"><strong>${euro(d.price)}</strong><span>Choisir ›</span></div></button>`;
+ }).join("");
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre prestation</div><div class="public-sub">Quelle coiffure souhaitez-vous réserver ?</div></header><main id="app">${publicStepIndicator(1)}<div class="public-service-list">${list}</div><button class="secondary" style="width:100%;margin-top:14px" onclick="publicHome()">← Retour</button></main>`;
 }
-function publicChooseService(i){publicBooking.service=services[i];publicBooking.time="";publicStep2()}
+function publicChooseService(i){publicBooking.service=services[i];publicBooking.date="";publicBooking.time="";publicStep2()}
 function publicCalendarMonth(y,m){
  const first=new Date(y,m,1), days=new Date(y,m+1,0).getDate();
  const start=(first.getDay()+6)%7;
  const names=["Lun","Mar","Mer","Jeu","Ven","Sam"];
  let cells=names.map(x=>`<div class="dow">${x}</div>`).join("");
  for(let i=0;i<start;i++)cells+='<div class="day empty"></div>';
+ const today=isoToday();
  for(let d=1;d<=days;d++){
    const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
    const dow=new Date(y,m,d).getDay();
    if(dow===0)continue;
+   const past=ds<today;
    const state=publicAvailability[ds]||"loading";
-   const cls=`day ${ds===isoToday()?"today":""} ${ds===publicBooking.date?"selected":""} ${state==="booked"?"unavailable":""}`;
-   cells+=`<button class="${cls}" ${state==="booked"?"disabled":""} onclick="publicSelectDate('${ds}')" title="${state==='booked'?'Réservé':'Disponible'}">${d}</button>`;
+   const unavailable=past||state==="booked";
+   const cls=`day ${ds===today?"today":""} ${ds===publicBooking.date?"selected":""} ${unavailable?"unavailable":""} ${past?"past":""}`;
+   const title=past?"Date passée":state==="booked"?"Réservé":"Disponible";
+   cells+=`<button class="${cls}" ${unavailable?"disabled":""} onclick="publicSelectDate('${ds}')" title="${title}">${d}</button>`;
  }
  return `<div class="cal public-cal">${cells}</div>`;
 }
@@ -210,17 +231,21 @@ let publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth()
 let publicAvailability={};
 async function publicStep2(){
  publicCalendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
- const today=isoToday();
- if(isSunday(publicBooking.date)||!publicBooking.date) publicBooking.date="";
- document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre date</div><div class="public-sub">${esc(publicBooking.service)}</div></header><main id="app">
+ if(isSunday(publicBooking.date)||!publicBooking.date||publicBooking.date<isoToday()) publicBooking.date="";
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Choisissez votre date</div><div class="public-sub">${esc(publicBooking.service)} · ${euro(publicPrice(publicBooking.service))}</div></header><main id="app">
+ ${publicStepIndicator(2)}
  <div class="card"><div class="calendar-head"><button class="secondary" onclick="publicChangeMonth(-1)">‹</button><div id="publicMonth" class="month"></div><button class="secondary" onclick="publicChangeMonth(1)">›</button></div>${publicCalendarMonth(publicCalendarCursor.getFullYear(),publicCalendarCursor.getMonth())}</div>
- <div class="small" style="margin:0 4px 10px">🟢 Disponible &nbsp; 🔴 Réservé</div>
+ <div class="availability-legend"><span>🟢 Disponible</span><span>🔴 Réservé</span></div>
  <div id="pubslots"></div>
- <button class="secondary" style="width:100%;margin-top:10px" onclick="publicStep1()">← Retour</button></main>`;
+ <button class="secondary" style="width:100%;margin-top:10px" onclick="publicStep1()">← Changer de prestation</button></main>`;
  await publicLoadAvailability();
 }
 async function publicChangeMonth(delta){
- publicCalendarCursor.setMonth(publicCalendarCursor.getMonth()+delta);
+ const now=new Date();
+ const target=new Date(publicCalendarCursor.getFullYear(),publicCalendarCursor.getMonth()+delta,1);
+ const min=new Date(now.getFullYear(),now.getMonth(),1);
+ if(target<min)return;
+ publicCalendarCursor=target;
  publicRenderCalendar();
  await publicLoadAvailability();
 }
@@ -232,58 +257,67 @@ function publicRenderCalendar(){
 }
 async function publicLoadAvailability(){
  const host=document.getElementById("pubslots");
- if(host)host.innerHTML='<div class="card"><div class="emptymsg">Chargement des disponibilités…</div></div>';
+ if(host)host.innerHTML='<div class="card"><div class="emptymsg">Vérification des disponibilités…</div></div>';
  const y=publicCalendarCursor.getFullYear(),m=publicCalendarCursor.getMonth();
  const start=`${y}-${String(m+1).padStart(2,"0")}-01`;
  const endDate=new Date(y,m+1,0);
  const end=`${y}-${String(m+1).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;
  try{
-   // Use the date RPC only. It is the function installed and tested in Supabase.
-   const {data:rows,error}=await supabaseClient.rpc("get_booked_dates",{p_from:start,p_to:end});
-   if(error) throw error;
+   let rows,error;
+   const first=await supabaseClient.rpc("get_booked_dates",{p_from:start,p_to:end});
+   rows=first.data; error=first.error;
+   if(error){
+     const fallback=await supabaseClient.rpc("get_booked_slots_public",{p_start_date:start,p_end_date:end});
+     rows=(fallback.data||[]).map(r=>({booking_date:r.booking_date}));
+     error=fallback.error;
+   }
+   if(error)throw error;
    publicAvailability={};
    (rows||[]).forEach(r=>{
      const d=String(r.booking_date||"").slice(0,10);
-     if(d) publicAvailability[d]="booked";
+     if(d)publicAvailability[d]="booked";
    });
    publicRenderCalendar();
-   if(publicBooking.date && publicAvailability[publicBooking.date]==="booked") publicBooking.date="";
+   if(publicBooking.date&&(publicAvailability[publicBooking.date]==="booked"||publicBooking.date<isoToday()))publicBooking.date="";
    publicShowSelectedDay();
  }catch(e){
-   console.error("get_booked_dates",e);
+   console.error("availability",e);
    publicAvailability={};
    publicRenderCalendar();
-   if(host)host.innerHTML='<div class="card"><div class="emptymsg">Impossible de charger les disponibilités. Réessayez dans un instant.</div></div>';
+   if(host)host.innerHTML='<div class="card"><div class="emptymsg">Les disponibilités ne sont pas accessibles pour le moment.<br><span class="small">Réessayez dans quelques instants.</span></div></div>';
  }
 }
-
 function publicSelectDate(ds){
- if(isSunday(ds)||publicAvailability[ds]==="booked")return;
+ if(ds<isoToday()||isSunday(ds)||publicAvailability[ds]==="booked")return;
  publicBooking.date=ds;publicBooking.time="";publicShowSelectedDay();
 }
 function publicShowSelectedDay(){
  const host=document.getElementById("pubslots");
  if(!host)return;
- if(!publicBooking.date){host.innerHTML='<div class="card"><div class="emptymsg">Choisissez une date disponible.</div></div>';return;}
+ if(!publicBooking.date){host.innerHTML='<div class="card"><div class="emptymsg">👆 Choisissez une date disponible pour voir les horaires.</div></div>';return;}
  const all=["10:00","11:00","12:00","13:00","14:00"];
- host.innerHTML=`<div class="card"><h2>${frDate(publicBooking.date)}</h2><div class="small" style="margin-bottom:10px">Créneaux disponibles · 10 h à 14 h</div><div class="slotgrid">${all.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div></div>`;
+ host.innerHTML=`<div class="card selected-date-card"><div class="small">DATE SÉLECTIONNÉE</div><h2 style="margin:4px 0 2px">${frDate(publicBooking.date)}</h2><div class="small" style="margin-bottom:12px">Choisissez votre heure d'arrivée</div><div class="slotgrid">${all.map(t=>`<button class="${publicBooking.time===t?"selected":""}" onclick="publicChooseTime('${t}')">${t}</button>`).join("")}</div></div>`;
 }
 function publicChooseTime(t){publicBooking.time=t;publicStep3()}
 function publicStep3(){
- document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">${esc(publicBooking.service)} · ${frDate(publicBooking.date)} à ${publicBooking.time}</div></header><main id="app"><div class="card"><label>Prénom *</label><input id="pf" placeholder="Prénom"><label>Nom *</label><input id="pl" placeholder="Nom"><label>Téléphone *</label><input id="pp" type="tel" placeholder="06 00 00 00 00"><label>E-mail</label><input id="pe" type="email" placeholder="cliente@email.com"><div id="pubConfirmError" class="small" style="color:#9b3949;margin-top:10px"></div><button id="pubConfirmBtn" style="width:100%;margin-top:16px" onclick="publicConfirm()">CONFIRMER MON RENDEZ-VOUS</button></div><button class="secondary" style="width:100%" onclick="publicStep2()">← Retour</button></main>`;
+ const details=publicServiceDetails[publicBooking.service]||{price:50,desc:""};
+ document.getElementById("shell").innerHTML=`<header><div class="public-title">Vos coordonnées</div><div class="public-sub">Dernière étape avant l'envoi de votre demande</div></header><main id="app">
+ ${publicStepIndicator(3)}
+ <div class="card booking-summary"><div class="summary-title">Récapitulatif</div><div class="summary-row"><span>Prestation</span><b>${esc(publicBooking.service)}</b></div><div class="summary-row"><span>Date</span><b>${frDate(publicBooking.date)}</b></div><div class="summary-row"><span>Heure</span><b>${publicBooking.time}</b></div><div class="summary-row total"><span>Prix</span><strong>${euro(details.price)}</strong></div></div>
+ <div class="card"><div class="form-intro"><b>Vos informations</b><span class="small">Les champs * sont obligatoires.</span></div><label>Prénom *</label><input id="pf" autocomplete="given-name" placeholder="Votre prénom"><label>Nom *</label><input id="pl" autocomplete="family-name" placeholder="Votre nom"><label>Téléphone *</label><input id="pp" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 00 00 00 00"><label>E-mail <span class="small">(facultatif)</span></label><input id="pe" type="email" autocomplete="email" placeholder="vous@email.com"><div id="pubConfirmError" class="form-error"></div><button id="pubConfirmBtn" style="width:100%;margin-top:18px" onclick="publicConfirm()">ENVOYER MA DEMANDE</button></div>
+ <button class="secondary" style="width:100%" onclick="publicStep2()">← Modifier la date ou l'heure</button></main>`;
 }
 async function publicConfirm(){
  const first=document.getElementById("pf").value.trim(),last=document.getElementById("pl").value.trim(),phone=document.getElementById("pp").value.trim(),email=document.getElementById("pe").value.trim();
  const err=document.getElementById("pubConfirmError"),btn=document.getElementById("pubConfirmBtn");
  if(!first||!last||!phone){if(err)err.textContent="Merci de renseigner le prénom, le nom et le téléphone.";return}
- if(!publicBooking.date||!publicBooking.time){if(err)err.textContent="Choisissez une date et un créneau.";return}
- if(btn){btn.disabled=true;btn.textContent="ENREGISTREMENT…"}
+ if(!publicBooking.date||!publicBooking.time){if(err)err.textContent="Votre date ou votre horaire n'est plus sélectionné. Revenez à l'étape précédente.";return}
+ if(email && !/^\S+@\S+\.\S+$/.test(email)){if(err)err.textContent="Vérifiez votre adresse e-mail.";return}
+ if(btn){btn.disabled=true;btn.textContent="ENVOI EN COURS…"}
  try{
-   const price=publicBooking.service.includes("Fulani")?60:50;
+   const price=publicPrice(publicBooking.service);
    const startAt=new Date(`${publicBooking.date}T${publicBooking.time}:00`);
    const endAt=new Date(startAt.getTime()+60*60*1000);
-   // Use the RPC that is actually installed in Supabase for public bookings.
-   // It also enforces the rule: one active booking blocks the whole day.
    const {data:result,error}=await supabaseClient.rpc("create_public_appointment",{
      p_first_name:first,p_last_name:last,p_phone:phone,p_email:email||null,
      p_service_name:publicBooking.service,p_service_price:price,
@@ -296,12 +330,12 @@ async function publicConfirm(){
    console.error("create_public_appointment",e);
    const msg=String(e?.message||e?.details||e?.hint||"");
    if(err){
-     if(msg.includes("DAY_ALREADY_BOOKED")) err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
-     else if(msg.includes("INVALID_CONTACT")) err.textContent="Merci de vérifier vos coordonnées.";
-     else if(msg.includes("INVALID_TIME")) err.textContent="Ce créneau n'est pas valide. Revenez au calendrier et choisissez une autre disponibilité.";
-     else err.textContent="La réservation n'a pas pu être enregistrée. Revenez au calendrier et réessayez.";
+     if(msg.includes("DAY_ALREADY_BOOKED"))err.textContent="Cette journée vient d'être réservée. Revenez au calendrier et choisissez une autre date.";
+     else if(msg.includes("INVALID_CONTACT"))err.textContent="Merci de vérifier vos coordonnées.";
+     else if(msg.includes("INVALID_TIME"))err.textContent="Ce créneau n'est plus disponible. Revenez au calendrier.";
+     else err.textContent="La réservation n'a pas pu être enregistrée. Vérifiez vos informations et réessayez.";
    }
-   if(btn){btn.disabled=false;btn.textContent="CONFIRMER MON RENDEZ-VOUS"}
+   if(btn){btn.disabled=false;btn.textContent="ENVOYER MA DEMANDE"}
  }
 }
 
