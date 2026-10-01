@@ -28,10 +28,20 @@ body.theme-dark .client-bottom-nav button{color:#aaa0a5}
 body.theme-dark .client-bottom-nav button.active{color:#e9a7b5}
 body.theme-dark .card{box-shadow:0 3px 18px #0005}
 body.theme-dark .theme-toggle{background:#30272b;border-color:#5a4650;color:#f7dfe5}
+body.theme-dark .badge{background:#3b2930;color:#f4dfe4}
+body.theme-dark .appt{border-color:#3a3034}
+body.theme-dark .day{background:#2a2327;border-color:#40363a;color:#eee}
+body.theme-dark .day.empty{background:transparent;border-color:transparent}
+body.theme-dark .day.selected{background:#3b2930;border-color:#bb7180}
+body.theme-dark .day.unavailable{background:#4a2930;border-color:#9b3949;color:#f0b7c3}
+body.theme-dark nav button{color:#aaa0a5}
+body.theme-dark nav button.active{color:#e9a7b5}
+body.theme-dark a.link{color:#e9a7b5}
 .theme-toggle{position:absolute;right:18px;top:16px;z-index:3;border:1px solid #ead3d8;background:rgba(255,255,255,.88);color:#6f1f35;padding:9px 12px;border-radius:999px;font-size:13px;font-weight:800;box-shadow:0 4px 14px #00000010}
 
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{padding:22px 22px 12px;background:var(--bg);position:sticky;top:0;z-index:5}
+.admin-header{position:relative}
 .brand-wrap{display:flex;align-items:center;gap:12px}.brand-logo{width:58px;height:58px;border-radius:50%;object-fit:cover;box-shadow:0 3px 12px #0002}.brand-text{min-width:0}.brand-text h1{font-size:24px;margin:0 0 2px}.public-logo-img{width:112px;height:112px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;box-shadow:0 5px 18px #0002}
 h1{font-size:28px;margin:0 0 4px}h2{font-size:22px;margin:0 0 16px}.sub{color:var(--muted)}
 main{padding:10px 18px 100px}.card{background:var(--card);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 3px 18px #00000008}
@@ -139,7 +149,7 @@ async function supabaseRpc(functionName, body){
 let authSession=null;
 let authLoading=true;
 
-const ADMIN_SHELL=`<header><div class="brand-wrap"><img class="brand-logo" src="icône-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
+const ADMIN_SHELL=`<header class="admin-header"><button class="theme-toggle" onclick="toggleTheme()" aria-label="Changer le mode d'affichage">🌙 Mode sombre</button><div class="brand-wrap"><img class="brand-logo" src="icône-192.png" alt="Logo Coiffure sur Nantes"><div class="brand-text"><h1 id="title">Coiffure sur Nantes</h1><div class="sub" id="subtitle">Votre agenda beauté</div></div></div></header>
 <main id="app"></main>
 <nav>
 <button data-tab="home"><span class="navicon">⌂</span>Accueil</button>
@@ -243,11 +253,12 @@ function bindNav(){
 function restoreAdminShell(){
   document.getElementById("shell").innerHTML=ADMIN_SHELL;
   bindNav();
+  applyTheme();
 }
 function showLoginPage(message=""){
-  document.body.className="";
+  document.body.className=currentTheme()==="dark"?"theme-dark":"theme-light";
   document.getElementById("shell").innerHTML=`<main id="app" style="max-width:520px;margin:0 auto;padding:32px 18px 60px">
-    <div class="card" style="margin-top:40px">
+    <button class="theme-toggle" style="position:fixed;top:14px;right:14px" onclick="toggleTheme()" aria-label="Changer le mode d'affichage">🌙 Mode sombre</button><div class="card" style="margin-top:40px">
       <div class="lock">🔐</div>
       <h2 style="text-align:center">Espace professionnel</h2>
       <div class="sub" style="text-align:center">Entrez votre code à 6 chiffres pour accéder à votre agenda, vos clientes et votre budget.</div>
@@ -564,7 +575,8 @@ function render(){
  if(!authSession){showLoginPage();return;}
  if(!document.querySelector("nav button")) restoreAdminShell();
  if(!onlineSyncDone)syncOnlineAppointments();
- document.body.className="";
+ document.body.className=currentTheme()==="dark"?"theme-dark":"theme-light";
+ applyTheme();
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===currentTab()));
  const t=currentTab();
  if(t==="appointments") appointmentsPage(); else if(t==="clients") clientsPage(); else if(t==="budget") budgetPage(); else if(t==="reminders") remindersPage(); else if(t==="services") servicesPage(); else if(t==="account") accountPage(); else homePage();
@@ -591,8 +603,14 @@ function saveService(id,isEdit){
 function toggleService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;s.active=!s.active;saveServices(serviceCatalog);refreshServices();render();}
 function deleteService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;const used=data.appointments.some(a=>a.service===s.name);const msg=used?`Supprimer « ${s.name} » ? Les anciens rendez-vous garderont cette prestation, mais elle ne sera plus proposée aux nouvelles clientes.`:`Supprimer « ${s.name} » ? Elle disparaîtra aussi de l'espace cliente.`;if(!confirm(msg))return;serviceCatalog=serviceCatalog.filter(x=>x.id!==id);saveServices(serviceCatalog);refreshServices();render();}
 function accountPage(){
+  const dark=currentTheme()==="dark";
   app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Espace professionnel protégé par un code à 6 chiffres.</div>
     <div class="small" style="margin-top:14px">Connexion professionnelle</div><b>Code à 6 chiffres activé</b>
+  </div>
+  <div class="card">
+    <h2 style="margin-bottom:8px">🎨 Apparence</h2>
+    <div class="sub" style="margin-bottom:14px">Choisissez le mode d'affichage de votre application.</div>
+    <button class="theme-toggle" style="position:static;width:100%;font-size:15px;padding:13px 16px" onclick="toggleTheme()" aria-label="Changer le mode d'affichage">${dark?'☀️ Activer le mode clair':'🌙 Activer le mode sombre'}</button>
   </div>
   <div class="card"><button class="secondary" style="width:100%" onclick="logoutProfessional()">Se déconnecter</button></div>`;
 }
