@@ -64,7 +64,9 @@ nav button{background:transparent;color:#777;padding:7px 2px;font-weight:500;fon
 .emptymsg{color:#777;text-align:center;padding:25px 5px}
 a.link{color:var(--rose);font-weight:700;text-decoration:none}
 
-.public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
+.public{min-height:100vh}.public header{position:static;text-align:center;padding:34px 22px 20px}.public-logo{font-size:44px;margin-bottom:8px}.public-title{font-size:30px;font-weight:900;margin:0}.public-sub{color:var(--muted);margin-top:8px}.big-book{width:100%;font-size:18px;padding:17px;margin-top:22px}.public-link{display:block;text-align:center;margin-top:18px;color:var(--rose);font-weight:700;text-decoration:none}.choice{display:flex;justify-content:space-between;align-items:center;gap:12px}.choice b{font-size:16px}.slotgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slotgrid button{background:var(--rose2);color:#714652}.slotgrid button.selected{background:var(--rose);color:#fff}.success{text-align:center;padding:30px 10px}.lock{font-size:44px;text-align:center}.payment-detail{display:flex;flex-direction:column;gap:8px;padding:15px;border:1px solid rgba(180,110,130,.35);border-radius:16px;margin-top:12px;background:rgba(255,255,255,.05)}
+.payment-detail span{font-size:17px;font-weight:700;word-break:break-word}.payment-detail .secondary{width:100%;margin-top:4px}
+.admin-note{font-size:12px;color:#888;margin-top:12px;text-align:center}
 
 
 .public-client-home{min-height:100vh;background:linear-gradient(180deg,#fff8fa 0%,#fdf2f5 52%,#fff 100%);position:relative;overflow:hidden;padding-bottom:88px}
@@ -343,7 +345,7 @@ function publicHome(){
    </section>
 
    <button class="client-action" onclick="publicStatusForm()">🔎 &nbsp; SUIVRE MA DEMANDE &nbsp;›</button>
-   <a class="client-whatsapp" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 &nbsp; Une question ? Contactez-moi sur WhatsApp &nbsp;›</a>
+   <a class="client-whatsapp" href="${wa(BUSINESS_WHATSAPP)||'#'}" onclick="">💬 &nbsp; Une question ? Contactez-moi sur WhatsApp &nbsp;›</a>
 
    <nav class="client-bottom-nav">
      <button class="active" onclick="publicHome()"><span class="navicon">⌂</span>Accueil</button>
@@ -374,10 +376,22 @@ function publicPaymentPage(){
  <button class="secondary" style="width:100%;margin-top:18px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
  applyTheme();
 }
+const PAYMENT_WERO='0746339960';
+const PAYMENT_PAYPAL='annambl746@gmail.com';
+const PAYMENT_IBAN='FR7616598000014000142007873';
+const PAYMENT_HOLDER='MABIALA IGNANGA ANNE';
+function copyPayment(value,label){
+ navigator.clipboard?.writeText(value).then(()=>alert(label+' copié.')).catch(()=>alert(value));
+}
 function startPayment(method){
- const labels={wero:'Wero',paypal:'PayPal',bank:'Virement bancaire'};
- const message='Le mode de paiement '+labels[method]+' doit encore être configuré avec vos coordonnées de paiement.';
- alert(message);
+ if(method==='wero'){
+   document.getElementById('shell').innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>💙 Payer avec Wero</h2><div class="sub">Envoyez votre paiement au numéro Wero ci-dessous.</div><div class="payment-detail"><strong>Numéro Wero</strong><span>${PAYMENT_WERO}</span><button class="secondary" onclick="copyPayment(PAYMENT_WERO,'Le numéro Wero')">📋 Copier</button></div><div class="admin-note">Vérifiez le montant de votre rendez-vous avant de confirmer le paiement.</div><button class="secondary" style="width:100%;margin-top:18px" onclick="publicPaymentPage()">← Autres moyens de paiement</button></div></main>`;
+ } else if(method==='paypal'){
+   document.getElementById('shell').innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>🅿️ Payer avec PayPal</h2><div class="sub">Utilisez cette adresse e-mail comme destinataire du paiement.</div><div class="payment-detail"><strong>PayPal</strong><span>${PAYMENT_PAYPAL}</span><button class="secondary" onclick="copyPayment(PAYMENT_PAYPAL,'L’adresse PayPal')">📋 Copier</button></div><a class="big-book" style="display:block;text-align:center;text-decoration:none;margin-top:16px" href="https://www.paypal.com/" target="_blank" rel="noopener">Ouvrir PayPal ↗</a><button class="secondary" style="width:100%;margin-top:10px" onclick="publicPaymentPage()">← Autres moyens de paiement</button></div></main>`;
+ } else {
+   document.getElementById('shell').innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>🏦 Virement bancaire</h2><div class="sub">Utilisez les coordonnées suivantes pour effectuer votre virement.</div><div class="payment-detail"><strong>Titulaire</strong><span>${PAYMENT_HOLDER}</span><button class="secondary" onclick="copyPayment(PAYMENT_HOLDER,'Le nom du titulaire')">📋 Copier</button></div><div class="payment-detail"><strong>IBAN</strong><span style="word-break:break-all">${PAYMENT_IBAN}</span><button class="secondary" onclick="copyPayment(PAYMENT_IBAN,'L’IBAN')">📋 Copier</button></div><div class="admin-note">Indiquez si possible votre nom et la date du rendez-vous dans le libellé du virement.</div><button class="secondary" style="width:100%;margin-top:18px" onclick="publicPaymentPage()">← Autres moyens de paiement</button></div></main>`;
+ }
+ applyTheme();
 }
 function publicGalleryPage(){
  document.body.className=publicThemeClass();
@@ -386,7 +400,7 @@ function publicGalleryPage(){
 }
 function publicContactPage(){
  document.body.className=publicThemeClass();
- document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>💬 Contact</h2><div class="sub">Une question sur une prestation ou un rendez-vous ?</div><a class="public-link" style="font-size:17px" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Contacter sur WhatsApp</a><button class="secondary" style="width:100%;margin-top:18px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>💬 Contact</h2><div class="sub">Une question sur une prestation ou un rendez-vous ?</div><a class="public-link" style="font-size:17px" href="${wa(BUSINESS_WHATSAPP)||'#'}" onclick="">💬 Contacter sur WhatsApp</a><button class="secondary" style="width:100%;margin-top:18px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
  applyTheme();
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
