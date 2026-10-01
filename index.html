@@ -291,7 +291,7 @@ async function logoutProfessional(){
 }
 window.addEventListener("hashchange",render);
 
-function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
+function isPublic(){return location.hash===""||location.hash==="#book"||location.hash.startsWith("#book/")}
 function currentTheme(){return localStorage.getItem("csn_theme")||"light"}
 function applyTheme(){
  const dark=currentTheme()==="dark";
