@@ -339,6 +339,7 @@ function publicHome(){
      <button class="client-card-btn" onclick="publicStatusForm()"><span class="cc-icon">📅</span><span class="cc-copy"><strong>Mes rendez-vous</strong><small>À venir et historique</small></span><span class="cc-arrow">›</span></button>
      <button class="client-card-btn" onclick="publicStep1()"><span class="cc-icon">❤️</span><span class="cc-copy"><strong>Mes prestations préférées</strong><small>Mes coiffures favorites</small></span><span class="cc-arrow">›</span></button>
      <button class="client-card-btn" onclick="publicNotificationsPage()"><span class="cc-icon">🔔</span><span class="cc-copy"><strong>Mes notifications</strong><small>Rappels et actualités</small></span><span class="cc-arrow">›</span></button>
+     <button class="client-card-btn" onclick="publicPaymentPage()"><span class="cc-icon">💳</span><span class="cc-copy"><strong>Paiement</strong><small>Wero, PayPal ou virement</small></span><span class="cc-arrow">›</span></button>
    </section>
 
    <button class="client-action" onclick="publicStatusForm()">🔎 &nbsp; SUIVRE MA DEMANDE &nbsp;›</button>
@@ -362,6 +363,21 @@ function publicNotificationsPage(){
  document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>🔔 Mes notifications</h2><div class="sub">Retrouvez ici les rappels et informations liés à vos rendez-vous.</div><div class="emptymsg">Aucune notification pour le moment.</div><button class="secondary" style="width:100%" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
  applyTheme();
+}
+function publicPaymentPage(){
+ document.body.className=publicThemeClass();
+ document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>💳 Paiement</h2><div class="sub">Choisissez votre mode de paiement pour votre rendez-vous.</div>
+ <button class="client-card-btn" style="width:100%;margin-top:16px;text-align:left" onclick="startPayment('wero')"><span class="cc-icon">💙</span><span class="cc-copy"><strong>Wero</strong><small>Paiement rapide</small></span><span class="cc-arrow">›</span></button>
+ <button class="client-card-btn" style="width:100%;margin-top:10px;text-align:left" onclick="startPayment('paypal')"><span class="cc-icon">🅿️</span><span class="cc-copy"><strong>PayPal</strong><small>Paiement en ligne</small></span><span class="cc-arrow">›</span></button>
+ <button class="client-card-btn" style="width:100%;margin-top:10px;text-align:left" onclick="startPayment('bank')"><span class="cc-icon">🏦</span><span class="cc-copy"><strong>Virement bancaire</strong><small>Coordonnées bancaires</small></span><span class="cc-arrow">›</span></button>
+ <div class="admin-note" style="margin-top:16px">Le montant du paiement sera indiqué selon votre rendez-vous.</div>
+ <button class="secondary" style="width:100%;margin-top:18px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ applyTheme();
+}
+function startPayment(method){
+ const labels={wero:'Wero',paypal:'PayPal',bank:'Virement bancaire'};
+ const message='Le mode de paiement '+labels[method]+' doit encore être configuré avec vos coordonnées de paiement.';
+ alert(message);
 }
 function publicGalleryPage(){
  document.body.className=publicThemeClass();
