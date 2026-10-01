@@ -714,12 +714,12 @@ function servicesPage(){
  refreshServices();
  const active=serviceCatalog.filter(s=>s.active), inactive=serviceCatalog.filter(s=>!s.active);
  const card=s=>`<div class="appt"><div style="display:flex;justify-content:space-between;gap:12px"><div><b>${esc(s.name)}</b><div class="small">${esc(s.desc||"Aucune description")}</div></div><strong style="color:var(--rose);white-space:nowrap">${euro(s.price)}</strong></div><div class="actions" style="margin-top:10px"><button class="secondary" onclick="editService('${esc(s.id)}')">✏️ Modifier</button><button class="danger" onclick="toggleService('${esc(s.id)}')">${s.active?'🙈 Masquer':'👁️ Réactiver'}</button><button class="danger" onclick="deleteService('${esc(s.id)}')">🗑️ Supprimer</button></div></div>`;
- app.innerHTML=`<div class="card"><h2>💇🏾 Mes prestations</h2><div class="sub">Ces prestations apparaissent directement dans l'espace cliente.</div><button style="width:100%;margin-top:16px" onclick="editService('new')">＋ Ajouter une prestation</button></div><div class="card"><h2>Prestations visibles côté cliente</h2>${active.map(card).join("")||'<div class="emptymsg">Aucune prestation active.</div>'}</div>${inactive.length?`<div class="card"><h2>Prestations masquées</h2>${inactive.map(card).join("")}</div>`:""}`;
+ document.getElementById('app').innerHTML=`<div class="card"><h2>💇🏾 Mes prestations</h2><div class="sub">Ces prestations apparaissent directement dans l'espace cliente.</div><button style="width:100%;margin-top:16px" onclick="editService('new')">＋ Ajouter une prestation</button></div><div class="card"><h2>Prestations visibles côté cliente</h2>${active.map(card).join("")||'<div class="emptymsg">Aucune prestation active.</div>'}</div>${inactive.length?`<div class="card"><h2>Prestations masquées</h2>${inactive.map(card).join("")}</div>`:""}`;
 }
 function editService(id){
  refreshServices(); const existing=id==='new'?null:serviceCatalog.find(s=>s.id===id); if(id!=='new'&&!existing)return servicesPage();
  const s=existing||{id:Date.now().toString(),name:"",price:50,desc:"",active:true};
- app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?'Modifier':'Nouvelle'} prestation</h2><button class="secondary" onclick="nav('services')">Annuler</button></div><label>Nom de la prestation</label><input id="serviceName" value="${esc(s.name)}" placeholder="Ex. Knotless longues"><label>Prix (€)</label><input id="servicePrice" type="number" min="0" step="0.01" value="${Number(s.price)||0}"><label>Description</label><textarea id="serviceDesc" placeholder="Description visible par la cliente">${esc(s.desc||"")}</textarea><label>Visibilité côté cliente</label><select id="serviceActive"><option value="1" ${s.active!==false?'selected':''}>Visible</option><option value="0" ${s.active===false?'selected':''}>Masquée</option></select><button style="width:100%;margin-top:14px" onclick="saveService('${esc(s.id)}',${existing?'true':'false'})">Enregistrer la prestation</button></div>`;
+ document.getElementById('app').innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?'Modifier':'Nouvelle'} prestation</h2><button class="secondary" onclick="nav('services')">Annuler</button></div><label>Nom de la prestation</label><input id="serviceName" value="${esc(s.name)}" placeholder="Ex. Knotless longues"><label>Prix (€)</label><input id="servicePrice" type="number" min="0" step="0.01" value="${Number(s.price)||0}"><label>Description</label><textarea id="serviceDesc" placeholder="Description visible par la cliente">${esc(s.desc||"")}</textarea><label>Visibilité côté cliente</label><select id="serviceActive"><option value="1" ${s.active!==false?'selected':''}>Visible</option><option value="0" ${s.active===false?'selected':''}>Masquée</option></select><button style="width:100%;margin-top:14px" onclick="saveService('${esc(s.id)}',${existing?'true':'false'})">Enregistrer la prestation</button></div>`;
  window.scrollTo(0,0);
 }
 function saveService(id,isEdit){
@@ -732,13 +732,13 @@ function saveService(id,isEdit){
 function toggleService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;s.active=!s.active;saveServices(serviceCatalog);refreshServices();render();}
 function deleteService(id){refreshServices();const s=serviceCatalog.find(x=>x.id===id);if(!s)return;const used=data.appointments.some(a=>a.service===s.name);const msg=used?`Supprimer « ${s.name} » ? Les anciens rendez-vous garderont cette prestation, mais elle ne sera plus proposée aux nouvelles clientes.`:`Supprimer « ${s.name} » ? Elle disparaîtra aussi de l'espace cliente.`;if(!confirm(msg))return;serviceCatalog=serviceCatalog.filter(x=>x.id!==id);saveServices(serviceCatalog);refreshServices();render();}
 async function paymentsPage(){
- app.innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="sub">Acomptes de 10 € déclarés par vos clientes. Vérifiez le paiement avant de confirmer l’acompte.</div><div class="emptymsg">Chargement des paiements…</div></div>`;
+ document.getElementById('app').innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="sub">Acomptes de 10 € déclarés par vos clientes. Vérifiez le paiement avant de confirmer l’acompte.</div><div class="emptymsg">Chargement des paiements…</div></div>`;
  try{
    const rows=await supabaseRpc('get_professional_payment_claims',{p_admin_code:'090720'});
    const list=rows||[];
    const badge=r=>r.status==='Vérifié'?'payment-verified':r.status==='Rejeté'?'payment-rejected':'payment-pending';
-   app.innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="sub">${list.filter(r=>r.status==='En attente').length} paiement(s) à vérifier.</div></div>${list.map(r=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${esc(r.client_first_name||'')} ${esc(r.client_last_name||'')}</b><div class="small">${esc(r.service_name||'')} · Acompte ${euro(r.amount)}</div><div class="small">${esc(r.method||'')} · CSN-${esc(r.appointment_id)}</div></div><span class="payment-status ${badge(r)}">${esc(r.status||'En attente')}</span></div>${r.reference?`<div class="small" style="margin-top:8px">Réf. paiement : ${esc(r.reference)}</div>`:''}${r.status==='En attente'?`<div class="actions" style="margin-top:12px"><button onclick="setPaymentStatus(${Number(r.id)},'Vérifié')">✅ ✅ Vérifier l’acompte de 10 €</button><button class="danger" onclick="setPaymentStatus(${Number(r.id)},'Rejeté')">❌ ❌ Rejeter l’acompte</button></div>`:''}</div>`).join('')||'<div class="card emptymsg">Aucune déclaration de paiement.</div>'}`;
- }catch(e){console.error('paymentsPage',e);app.innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="emptymsg">La vérification des paiements n’est pas encore configurée sur Supabase.<br><span class="small">Exécutez le script SQL fourni avec cette version.</span></div></div>`;}
+   document.getElementById('app').innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="sub">${list.filter(r=>r.status==='En attente').length} paiement(s) à vérifier.</div></div>${list.map(r=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${esc(r.client_first_name||'')} ${esc(r.client_last_name||'')}</b><div class="small">${esc(r.service_name||'')} · Acompte ${euro(r.amount)}</div><div class="small">${esc(r.method||'')} · CSN-${esc(r.appointment_id)}</div></div><span class="payment-status ${badge(r)}">${esc(r.status||'En attente')}</span></div>${r.reference?`<div class="small" style="margin-top:8px">Réf. paiement : ${esc(r.reference)}</div>`:''}${r.status==='En attente'?`<div class="actions" style="margin-top:12px"><button onclick="setPaymentStatus(${Number(r.id)},'Vérifié')">✅ ✅ Vérifier l’acompte de 10 €</button><button class="danger" onclick="setPaymentStatus(${Number(r.id)},'Rejeté')">❌ ❌ Rejeter l’acompte</button></div>`:''}</div>`).join('')||'<div class="card emptymsg">Aucune déclaration de paiement.</div>'}`;
+ }catch(e){console.error('paymentsPage',e);document.getElementById('app').innerHTML=`<div class="card"><h2>💳 Paiements</h2><div class="emptymsg">La vérification des paiements n’est pas encore configurée sur Supabase.<br><span class="small">Exécutez le script SQL fourni avec cette version.</span></div></div>`;}
 }
 async function setPaymentStatus(id,status){
  if(!confirm(status==='Vérifié'?'Confirmer que le paiement a bien été reçu ?':'❌ Rejeter l’acompte cette déclaration de paiement ?'))return;
@@ -746,7 +746,7 @@ async function setPaymentStatus(id,status){
 }
 function accountPage(){
   const dark=currentTheme()==="dark";
-  app.innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Espace professionnel protégé par un code à 6 chiffres.</div>
+  document.getElementById('app').innerHTML=`<div class="card"><h2>🔐 Mon compte</h2><div class="sub">Espace professionnel protégé par un code à 6 chiffres.</div>
     <div class="small" style="margin-top:14px">Connexion professionnelle</div><b>Code à 6 chiffres activé</b>
   </div>
   <div class="card">
@@ -760,7 +760,7 @@ function homePage(){
  const today=isoToday(), todayA=data.appointments.filter(a=>a.date===today);
  const month=new Date().toISOString().slice(0,7);
  const income=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé").reduce((s,a)=>s+Number(a.price||0),0);
- app.innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
+ document.getElementById('app').innerHTML=`<div class="card"><h2>Bonjour 👋🏾</h2><div class="sub">Voici votre activité du jour.</div>
  <div class="row" style="margin-top:15px"><div><b>${todayA.length}</b><div class="small">RDV aujourd'hui</div></div><div><b>${euro(income)}</b><div class="small">CA du mois</div></div></div></div>
  <div class="card"><h2>🔔 Prochains rendez-vous</h2>${data.appointments.filter(a=>a.date>=today&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4).map(a=>apptHTML(a)).join("")||'<div class="emptymsg">Aucun rendez-vous à venir.</div>'}</div>
  <div class="actions" style="margin-top:12px"><button onclick="newAppointment()">＋ Ajouter un rendez-vous</button><button class="secondary" onclick="logoutProfessional()">Se déconnecter</button></div>`;
@@ -807,7 +807,7 @@ function appointmentsPage(){
  if(isSunday(selected)){ selected=isoToday(); if(isSunday(selected)){ const d=new Date(); d.setDate(d.getDate()+1); selected=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;} window.selectedDay=selected; }
  let list=data.appointments.filter(a=>a.date===selected).sort((a,b)=>a.time.localeCompare(b.time));
  let upcoming=data.appointments.filter(a=>a.date>=isoToday()&&a.status!=="Annulé").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
- app.innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
+ document.getElementById('app').innerHTML=`<div class="card"><div class="calendar-head"><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()-1);appointmentsPage()">‹</button><div class="month">${calDate.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="secondary" onclick="calDate.setMonth(calDate.getMonth()+1);appointmentsPage()">›</button></div>
  <div class="cal">${cells}</div><button class="secondary" style="width:100%;margin-top:12px" onclick="onlineSyncDone=false;syncOnlineAppointments(true).then(()=>{save();appointmentsPage()})">🔄 Actualiser les demandes en ligne</button></div>
  <div class="card"><div class="calendar-head"><h2>${frDate(selected)}</h2><button onclick="newAppointment('${selected}')">＋</button></div>
  ${list.map(a=>`<div class="appt"><b>${esc(a.time)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div><span class="badge">${esc(a.status)}</span><div class="small">🔔 ${a.reminder==="2h"?"Rappel 2 h avant":a.reminder==="none"?"Sans rappel":"Rappel 24 h avant"}</div><div class="actions" style="margin-top:8px">${a.status==="En attente"?`<button onclick="confirmAppointment('${esc(a.id)}')">✅ Confirmer</button>`:""}<button class="secondary" onclick="editAppointment('${a.id}')">Modifier</button><button class="danger" onclick="cancelAppointment('${a.id}')">Annuler</button>${a.phone&&wa(a.phone)?`<a class="link" href="${waConfirm(a)}" target="_blank">💬 WhatsApp</a>`:""}</div></div>`).join("")||'<div class="emptymsg">Aucun rendez-vous ce jour.</div>'}</div>
@@ -816,7 +816,7 @@ function appointmentsPage(){
 function newAppointment(date=isoToday(),existing=null){
  if(isSunday(date)){ alert("Le dimanche, le salon est fermé. Choisissez du lundi au samedi."); return; }
  const a=existing||{id:Date.now().toString(),clientName:"",firstName:"",lastName:"",phone:"",email:"",clientNotes:"",service:services[0]||"",date,time:"10:00",price:serviceDetails(services[0]||"").price||0,deposit:20,status:"Confirmé",notes:"",reminder:"24h"};
- app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
+ document.getElementById('app').innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?"Modifier":"Nouveau"} rendez-vous</h2><button class="secondary" onclick="render()">Annuler</button></div>
  <label>Prénom</label><input id="first" value="${esc(a.firstName)}" placeholder="Prénom">
  <label>Nom</label><input id="last" value="${esc(a.lastName)}" placeholder="Nom">
  <label>📞 Téléphone</label><input id="phone" type="tel" value="${esc(a.phone)}" placeholder="06 00 00 00 00">
@@ -919,7 +919,7 @@ function editAppointment(id){let a=data.appointments.find(x=>x.id===id);if(a)new
 function cancelAppointment(id){if(confirm("Annuler ce rendez-vous ?")){let a=data.appointments.find(x=>x.id===id);if(a){a.status="Annulé";save();syncPublicStatus(a)}render()}}
 function clientsPage(){
  const clients=[...data.clients].sort((a,b)=>a.name.localeCompare(b.name));
- app.innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
+ document.getElementById('app').innerHTML=`<div class="card"><h2>Mes clientes</h2><div class="sub">${clients.length} cliente(s) enregistrée(s)</div></div>
  ${clients.map(c=>`<div class="card client-card"><div><div class="client-name">${esc(c.name)}</div><div class="small">${esc(c.phone||"Téléphone non renseigné")}</div><div class="small">${esc(c.email||"E-mail non renseigné")}</div></div><button onclick="clientProfile('${encodeURIComponent(c.key)}')">Voir</button></div>`).join("")||'<div class="card emptymsg">Aucune cliente pour le moment.</div>'}`;
 }
 function clientProfile(enc){
@@ -929,7 +929,7 @@ function clientProfile(enc){
  const ca=validAps.reduce((sum,a)=>sum+Number(a.price||0),0);
  const deposits=validAps.reduce((sum,a)=>sum+Number(a.deposit||0),0);
  const balance=ca-deposits;
- app.innerHTML=`<div class="card">
+ document.getElementById('app').innerHTML=`<div class="card">
  <div class="calendar-head"><h2>${esc(c.name)}</h2><button class="secondary" onclick="clientsPage()">Retour</button></div>
  <div class="small">📞 ${esc(c.phone||"Non renseigné")}</div>
  ${c.phone?`<div class="actions" style="margin-top:12px"><a class="link" href="tel:${esc(c.phone)}">📞 Appeler</a>${wa(c.phone)?`<a class="link" href="${wa(c.phone)}" target="_blank">💬 WhatsApp</a>`:""}</div>`:""}
@@ -975,7 +975,7 @@ function remindersPage(){
     return reminderAt<=now.getTime() && x.dt.getTime()>now.getTime();
   });
 
-  app.innerHTML=`<div class="card"><h2>🔔 Rappels</h2>
+  document.getElementById('app').innerHTML=`<div class="card"><h2>🔔 Rappels</h2>
     <div class="sub">Les rappels enregistrés pour tes rendez-vous.</div>
     <button style="margin-top:14px" onclick="requestNotifications()">🔔 Activer les notifications</button>
     <div class="small" style="margin-top:10px">Sur Android, une notification locale peut être affichée lorsque l'application est ouverte. Pour des notifications fiables même quand l'application est complètement fermée, il faudra plus tard connecter un service de notifications.</div>
@@ -1032,7 +1032,7 @@ async function requestNotifications(){
 function budgetPage(){
  const month=new Date().toISOString().slice(0,7), arr=data.appointments.filter(a=>a.date?.startsWith(month)&&a.status!=="Annulé");
  const ca=arr.reduce((s,a)=>s+Number(a.price||0),0), dep=arr.reduce((s,a)=>s+Number(a.deposit||0),0), sol=ca-dep;
- app.innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
+ document.getElementById('app').innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
  <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
 }
 bindNav();
