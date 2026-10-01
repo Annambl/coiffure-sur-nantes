@@ -8,6 +8,28 @@
 <title>Coiffure sur Nantes</title>
 <style>
 :root{--rose:#bb7180;--rose2:#f5e4e7;--ink:#29252a;--muted:#77727a;--bg:#fbf7f8;--card:#fff}
+body.theme-dark{--bg:#171316;--card:#241f22;--ink:#f7eef1;--muted:#b9adb2;background:#171316;color:#f7eef1}
+body.theme-dark header,body.theme-dark nav{background:#171316;border-color:#3a3034}
+body.theme-dark input,body.theme-dark select,body.theme-dark textarea{background:#2a2327;color:#f7eef1;border-color:#514248}
+body.theme-dark button.secondary{background:#3b2930;color:#f4dfe4}
+body.theme-dark .public-client-home{background:linear-gradient(180deg,#171316 0%,#21191d 52%,#171316 100%)}
+body.theme-dark .client-hero .public-title{color:#fff}
+body.theme-dark .client-hero .public-sub,body.theme-dark .client-highlight span,body.theme-dark .client-section-sub{color:#b9adb2}
+body.theme-dark .client-highlight{color:#f0b7c3}
+body.theme-dark .client-highlight .hi-icon{background:#38262d}
+body.theme-dark .client-section-title{color:#f0c0ca}
+body.theme-dark .client-card-btn{background:#2a2327;color:#f7dfe5;box-shadow:0 4px 16px #0005}
+body.theme-dark .client-card-btn .cc-icon{background:#3a2930;color:#e99bad}
+body.theme-dark .client-card-btn small{color:#b9adb2}
+body.theme-dark .client-action{background:#3b2930;color:#f4dfe4}
+body.theme-dark .client-whatsapp{background:#241f22;color:#e9a7b5;border-color:#9b5d6d}
+body.theme-dark .client-bottom-nav{background:rgba(23,19,22,.98);border-color:#3a3034}
+body.theme-dark .client-bottom-nav button{color:#aaa0a5}
+body.theme-dark .client-bottom-nav button.active{color:#e9a7b5}
+body.theme-dark .card{box-shadow:0 3px 18px #0005}
+body.theme-dark .theme-toggle{background:#30272b;border-color:#5a4650;color:#f7dfe5}
+.theme-toggle{position:absolute;right:18px;top:16px;z-index:3;border:1px solid #ead3d8;background:rgba(255,255,255,.88);color:#6f1f35;padding:9px 12px;border-radius:999px;font-size:13px;font-weight:800;box-shadow:0 4px 14px #00000010}
+
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{padding:22px 22px 12px;background:var(--bg);position:sticky;top:0;z-index:5}
 .brand-wrap{display:flex;align-items:center;gap:12px}.brand-logo{width:58px;height:58px;border-radius:50%;object-fit:cover;box-shadow:0 3px 12px #0002}.brand-text{min-width:0}.brand-text h1{font-size:24px;margin:0 0 2px}.public-logo-img{width:112px;height:112px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;box-shadow:0 5px 18px #0002}
@@ -259,11 +281,26 @@ async function logoutProfessional(){
 window.addEventListener("hashchange",render);
 
 function isPublic(){return location.hash==="#book"||location.hash.startsWith("#book/")}
+function currentTheme(){return localStorage.getItem("csn_theme")||"light"}
+function applyTheme(){
+ const dark=currentTheme()==="dark";
+ document.body.classList.toggle("theme-dark",dark);
+ document.body.classList.toggle("theme-light",!dark);
+ const meta=document.querySelector('meta[name="theme-color"]');
+ if(meta) meta.setAttribute("content",dark?"#171316":"#bb7180");
+ document.querySelectorAll(".theme-toggle").forEach(btn=>btn.innerHTML=dark?"☀️ Mode clair":"🌙 Mode sombre");
+}
+function toggleTheme(){
+ localStorage.setItem("csn_theme",currentTheme()==="dark"?"light":"dark");
+ applyTheme();
+}
+function publicThemeClass(){return currentTheme()==="dark"?"public theme-dark":"public theme-light"}
 function publicHome(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`
  <div class="public-client-home">
    <section class="client-hero">
+     <button class="theme-toggle" onclick="toggleTheme()" aria-label="Changer le mode d'affichage">🌙 Mode sombre</button>
      <img class="public-logo-img" src="icône-512.png" alt="Logo Coiffure sur Nantes">
      <div class="public-title">Coiffure sur Nantes</div>
      <div class="public-sub">Réservez votre rendez-vous en quelques clics ✨</div>
@@ -300,22 +337,27 @@ function publicHome(){
      <button onclick="publicContactPage()"><span class="navicon">💬</span>Contact</button>
    </nav>
  </div>`;
+ applyTheme();
 }
 function publicProfilePage(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>👤 Mon profil</h2><div class="sub">Vos informations client.</div><p style="margin-top:20px">Pour modifier vos informations, vous pourrez les renseigner au moment de votre prochaine réservation.</p><button class="big-book" onclick="publicStep1()">📅 Prendre rendez-vous</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ applyTheme();
 }
 function publicNotificationsPage(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>🔔 Mes notifications</h2><div class="sub">Retrouvez ici les rappels et informations liés à vos rendez-vous.</div><div class="emptymsg">Aucune notification pour le moment.</div><button class="secondary" style="width:100%" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ applyTheme();
 }
 function publicGalleryPage(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>🖼️ Galerie</h2><div class="sub">Découvrez les coiffures proposées par Coiffure sur Nantes.</div><div class="emptymsg">La galerie sera bientôt disponible.</div><button class="secondary" style="width:100%" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ applyTheme();
 }
 function publicContactPage(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app" style="padding-top:28px"><div class="card"><h2>💬 Contact</h2><div class="sub">Une question sur une prestation ou un rendez-vous ?</div><a class="public-link" style="font-size:17px" href="${wa('0600000000')||'#'}" onclick="if(!wa('0600000000')){alert('Ajoutez votre numéro WhatsApp dans les paramètres de l’application.');return false}">💬 Contacter sur WhatsApp</a><button class="secondary" style="width:100%;margin-top:18px" onclick="publicHome()">← Retour à l'accueil</button></div></main>`;
+ applyTheme();
 }
 let publicBooking={service:"",date:"",time:"",firstName:"",lastName:"",phone:"",email:""};
 function publicPrice(service){return Number(serviceDetails(service).price||0)}
@@ -324,7 +366,7 @@ function publicStepIndicator(step){
  return `<div class="public-steps">${labels.map((label,i)=>`<div class="public-step ${i+1===step?"active":""} ${i+1<step?"done":""}"><span>${i+1<step?"✓":i+1}</span><b>${label}</b></div>`).join("")}</div>`;
 }
 function publicStep1(){
- document.body.className="public";
+ document.body.className=publicThemeClass();
  const list=services.map((sv,i)=>{
    const d=serviceDetails(sv);
    return `<button class="public-service ${publicBooking.service===sv?"selected":""}" onclick="publicChooseService(${i})"><div class="public-service-main"><b>${esc(sv)}</b><span class="small">${esc(d.desc)}</span></div><div class="public-service-side"><strong>${euro(d.price)}</strong><span>Choisir ›</span></div></button>`;
@@ -476,7 +518,7 @@ function publicSuccess(a){
 }
 function publicStatusForm(){
  let ref="",phone="";try{ref=localStorage.getItem("csn_last_public_ref")||"";phone=localStorage.getItem("csn_last_public_phone")||""}catch(_){ }
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<header><div class="public-title">Suivre ma demande</div><div class="public-sub">Entrez votre référence et votre téléphone.</div></header><main id="app"><div class="card"><label>Référence de la demande</label><input id="statusRef" value="${esc(ref)}" placeholder="Ex. CSN-12"><label>Téléphone</label><input id="statusPhone" type="tel" value="${esc(phone)}" placeholder="06 00 00 00 00"><div id="statusError" class="form-error"></div><button class="big-book" onclick="publicStatusLookup()">VOIR MA DEMANDE</button></div><button class="secondary" style="width:100%" onclick="publicHome()">← Retour</button></main>`;
 }
 async function publicStatusLookup(){
@@ -500,7 +542,7 @@ function publicStatusPage(id,status,service,startAt){
  const st=map[status]||map["En attente"];
  let dateText="";
  if(startAt){const d=new Date(startAt);if(!isNaN(d))dateText=`${d.toLocaleDateString("fr-FR",{timeZone:"Europe/Paris"})} à ${d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})}`}
- document.body.className="public";
+ document.body.className=publicThemeClass();
  document.getElementById("shell").innerHTML=`<main id="app"><div class="card success status-card"><div style="font-size:52px">${st.icon}</div><h2>${st.label}</h2><p class="sub">${esc(service||"")} ${dateText?`<br>📅 ${esc(dateText)}`:""}</p><p><strong class="${st.cls}">${st.label}</strong></p><p>${st.text}</p><div class="small">Référence : CSN-${esc(id)}</div><button class="big-book" onclick="publicStatusLookupSaved()">Actualiser le statut</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
  if(status==="En attente"){
    publicStatusTimer=setInterval(()=>publicStatusLookupSaved(true),10000);
