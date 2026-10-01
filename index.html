@@ -38,6 +38,8 @@ body.theme-dark nav button{color:#aaa0a5}
 body.theme-dark nav button.active{color:#e9a7b5}
 body.theme-dark a.link{color:#e9a7b5}
 .theme-toggle{position:absolute;right:18px;top:16px;z-index:3;border:1px solid #ead3d8;background:rgba(255,255,255,.88);color:#6f1f35;padding:9px 12px;border-radius:999px;font-size:13px;font-weight:800;box-shadow:0 4px 14px #00000010}
+.client-pro-access{position:absolute;left:18px;top:16px;z-index:4;border:1px solid #ead3d8;background:rgba(255,255,255,.92);color:#6f1f35;padding:9px 12px;border-radius:999px;font-size:13px;font-weight:800;box-shadow:0 4px 14px #00000010;cursor:pointer}
+body.theme-dark .client-pro-access{background:#30272b;border-color:#5a4650;color:#f7dfe5}
 
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{padding:22px 22px 12px;background:var(--bg);position:sticky;top:0;z-index:5}
@@ -311,6 +313,7 @@ function publicHome(){
  document.getElementById("shell").innerHTML=`
  <div class="public-client-home">
    <section class="client-hero">
+     <button class="client-pro-access" onclick="location.hash='#admin';render()" aria-label="Accéder à l'espace professionnel">🔐 Espace pro</button>
      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Changer le mode d'affichage">🌙 Mode sombre</button>
      <img class="public-logo-img" src="icône-512.png" alt="Logo Coiffure sur Nantes">
      <div class="public-title">Coiffure sur Nantes</div>
