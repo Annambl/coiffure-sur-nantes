@@ -1,7 +1,8 @@
-const CACHE = "csn-v41";
+const CACHE = "csn-v35";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE).then(cache =>
       cache.addAll([
@@ -48,7 +49,9 @@ self.addEventListener("fetch", event => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then(cached => cached || caches.match("./index.html"))
+          caches.match(request).then(
+            cached => cached || caches.match("./index.html")
+          )
         )
     );
     return;
