@@ -115,6 +115,7 @@ a.link{color:var(--rose);font-weight:700;text-decoration:none}
 </div>
 <script>
 const SUPABASE_URL="https://kaunnovtcujfgktyxzgj.supabase.co";
+const BUSINESS_WHATSAPP="+33744586926";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_A2gCiij_BTERARnkOSPj4Q_lZktqbeA";
 function refreshAutomaticCancellations(){
   try{
@@ -735,7 +736,7 @@ function servicesPage(){
 function editService(id){
  refreshServices(); const existing=id==='new'?null:serviceCatalog.find(s=>s.id===id); if(id!=='new'&&!existing)return servicesPage();
  const s=existing||{id:Date.now().toString(),name:"",price:50,desc:"",active:true};
- document.getElementById('app').innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?'Modifier':'Nouvelle'} prestation</h2><button class="secondary" onclick="nav('services')">Annuler</button></div><label>Nom de la prestation</label><input id="serviceName" value="${esc(s.name)}" placeholder="Ex. Knotless longues"><label>Prix (€)</label><input id="servicePrice" type="number" min="0" step="0.01" value="${Number(s.price)||0}"><label>Description</label><textarea id="serviceDesc" placeholder="Description visible par la cliente">${esc(s.desc||"")}</textarea><label>Visibilité côté cliente</label><select id="serviceActive"><option value="1" ${s.active!==false?'selected':''}>Visible</option><option value="0" ${s.active===false?'selected':''}>Masquée</option></select><button style="width:100%;margin-top:14px" onclick="saveService('${esc(s.id)}',${existing?'true':'false'})">Enregistrer la prestation</button></div>`;
+ app.innerHTML=`<div class="card"><div class="calendar-head"><h2>${existing?'Modifier':'Nouvelle'} prestation</h2><button class="secondary" onclick="nav('services')">Annuler</button></div><label>Nom de la prestation</label><input id="serviceName" value="${esc(s.name)}" placeholder="Ex. Knotless longues"><label>Prix (€)</label><input id="servicePrice" type="number" min="0" step="0.01" value="${Number(s.price)||0}"><label>Description</label><textarea id="serviceDesc" placeholder="Description visible par la cliente">${esc(s.desc||"")}</textarea><label>Visibilité côté cliente</label><select id="serviceActive"><option value="1" ${s.active!==false?'selected':''}>Visible</option><option value="0" ${s.active===false?'selected':''}>Masquée</option></select><button style="width:100%;margin-top:14px" onclick="saveService('${esc(s.id)}',${existing?'true':'false'})">Enregistrer la prestation</button></div>`;
  window.scrollTo(0,0);
 }
 function saveService(id,isEdit){
