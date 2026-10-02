@@ -202,40 +202,54 @@ function refreshServices(){serviceCatalog=loadServices();services=serviceCatalog
 function serviceDetails(name){return serviceCatalog.find(s=>s.name===name)||{name,price:50,desc:"Prestation coiffure",active:true};}
 
 function loadData(){
-  let raw=localStorage.getItem(KEY);
+  let raw=null;
   let migrated=false;
-  if(!raw){
-    raw=localStorage.getItem(OLD_KEY);
-    migrated=!!raw;
-  }
+  try{
+    raw=localStorage.getItem(KEY);
+    if(!raw){
+      raw=localStorage.getItem(OLD_KEY);
+      migrated=!!raw;
+    }
+  }catch(_){ raw=null; }
+
   let d;
   try{ d=raw?JSON.parse(raw):{appointments:[],clients:[]}; }
-  catch(e){ d={appointments:[],clients:[]}; }
+  catch(_){ d={appointments:[],clients:[]}; }
+  if(!d || typeof d!=="object") d={appointments:[],clients:[]};
 
   d.appointments=Array.isArray(d.appointments)?d.appointments:[];
   d.clients=Array.isArray(d.clients)?d.clients:[];
 
-  // Upgrade older appointments to the V7 client structure.
-  d.appointments=d.appointments.map(a=>{
-    const name=(a.clientName||a.client||"").trim();
-    let first=a.firstName||"";
-    let last=a.lastName||"";
+  // Normalize old/local data defensively so one malformed value cannot stop the app.
+  d.appointments=d.appointments.filter(a=>a && typeof a==="object").map(a=>{
+    const name=String(a.clientName ?? a.client ?? "").trim();
+    let first=String(a.firstName ?? "").trim();
+    let last=String(a.lastName ?? "").trim();
     if(!first && !last && name){
       const parts=name.split(/\s+/);
       first=parts.shift()||"";
       last=parts.join(" ");
     }
     const clientName=(first+" "+last).trim()||name;
-    const key=(a.clientKey||clientName).toLowerCase().replace(/\s+/g," ").trim();
-    return {...a,clientName,firstName:first,lastName:last,phone:a.phone||"",email:a.email||"",clientNotes:a.clientNotes||"",reminder:a.reminder||"24h",clientKey:key};
+    const key=String(a.clientKey ?? clientName).toLowerCase().replace(/\s+/g," ").trim();
+    return {
+      ...a,
+      clientName,
+      firstName:first,
+      lastName:last,
+      phone:String(a.phone ?? ""),
+      email:String(a.email ?? ""),
+      clientNotes:String(a.clientNotes ?? ""),
+      reminder:String(a.reminder ?? "24h"),
+      clientKey:key
+    };
   });
 
-  // Rebuild/complete the client list from appointments without losing existing data.
   const byKey=new Map();
-  d.clients.forEach(c=>{
-    const name=(c.name||((c.firstName||"")+" "+(c.lastName||""))).trim();
-    const key=(c.key||name).toLowerCase().replace(/\s+/g," ").trim();
-    if(key) byKey.set(key,{...c,key,name:name||key,phone:c.phone||"",email:c.email||"",notes:c.notes||""});
+  d.clients.filter(c=>c && typeof c==="object").forEach(c=>{
+    const name=String(c.name ?? ((c.firstName??"")+" "+(c.lastName??""))).trim();
+    const key=String(c.key ?? name).toLowerCase().replace(/\s+/g," ").trim();
+    if(key) byKey.set(key,{...c,key,name:name||key,phone:String(c.phone??""),email:String(c.email??""),notes:String(c.notes??"")});
   });
   d.appointments.forEach(a=>{
     if(!a.clientKey)return;
@@ -244,7 +258,9 @@ function loadData(){
   });
   d.clients=Array.from(byKey.values());
 
-  if(migrated || !localStorage.getItem(KEY)) localStorage.setItem(KEY,JSON.stringify(d));
+  try{
+    if(migrated || !localStorage.getItem(KEY)) localStorage.setItem(KEY,JSON.stringify(d));
+  }catch(_){}
   return d;
 }
 let data=loadData();
@@ -311,7 +327,7 @@ async function logoutProfessional(){
 window.addEventListener("hashchange",render);
 
 function isPublic(){return location.hash===""||location.hash==="#book"||location.hash.startsWith("#book/")}
-function currentTheme(){return localStorage.getItem("csn_theme")||"light"}
+function currentTheme(){try{return localStorage.getItem("csn_theme")||"light"}catch(_){return "light"}}
 function applyTheme(){
  const dark=currentTheme()==="dark";
  document.body.classList.toggle("theme-dark",dark);
@@ -321,7 +337,7 @@ function applyTheme(){
  document.querySelectorAll(".theme-toggle").forEach(btn=>btn.innerHTML=dark?"☀️ Mode clair":"🌙 Mode sombre");
 }
 function toggleTheme(){
- localStorage.setItem("csn_theme",currentTheme()==="dark"?"light":"dark");
+ try{localStorage.setItem("csn_theme",currentTheme()==="dark"?"light":"dark")}catch(_){}
  applyTheme();
 }
 function publicThemeClass(){return currentTheme()==="dark"?"public theme-dark":"public theme-light"}
@@ -1035,21 +1051,29 @@ function budgetPage(){
  document.getElementById('app').innerHTML=`<div class="card"><h2>Budget</h2><div class="sub">Mois en cours</div><div class="row" style="margin-top:18px"><div><b>${euro(ca)}</b><div class="small">Chiffre d'affaires</div></div><div><b>${euro(dep)}</b><div class="small">Acomptes reçus</div></div></div><div style="margin-top:18px"><b>${euro(sol)}</b><div class="small">Soldes restant à encaisser</div></div></div>
  <div class="card"><h2>Rendez-vous du mois</h2>${arr.map(a=>`<div class="appt"><b>${frDate(a.date)} · ${esc(a.clientName)}</b><div class="small">${esc(a.service)} · ${euro(a.price)} · Acompte ${euro(a.deposit)}</div></div>`).join("")||'<div class="emptymsg">Aucune donnée.</div>'}</div>`;
 }
-bindNav();
-// Public booking link: add #book to the application URL. Professional area uses a 6-digit access code.
-const professionalUnlocked=sessionStorage.getItem("csn_professional_unlocked")==="1";
-authLoading=false;
-if(!isPublic()){
-  if(professionalUnlocked){
-    authSession={user:{email:"Accès professionnel"}};
-    render();
+try{
+  bindNav();
+  let professionalUnlocked=false;
+  try{professionalUnlocked=sessionStorage.getItem("csn_professional_unlocked")==="1"}catch(_){}
+  authLoading=false;
+  if(!isPublic()){
+    if(professionalUnlocked){
+      authSession={user:{email:"Accès professionnel"}};
+      restoreAdminShell();
+      render();
+    }else{
+      showLoginPage();
+    }
   }else{
-    showLoginPage();
+    render();
   }
-}else{
-  render();
+}catch(startError){
+  console.error("Startup error",startError);
+  document.body.className="theme-light";
+  const shell=document.getElementById("shell");
+  if(shell) shell.innerHTML=`<main id="app" style="max-width:560px;margin:0 auto;padding:40px 18px"><div class="card"><h2>Application à recharger</h2><div class="sub">Une ancienne donnée locale empêche l’affichage. Fermez puis rouvrez l’application. Si le problème continue, ouvrez la page dans Chrome et effacez uniquement les données du site.</div><button style="width:100%;margin-top:18px" onclick="location.hash='';location.reload()">Recharger l’application</button></div></main>`;
 }
 refreshAutomaticCancellations();
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=40").catch(()=>{});
 </script>
 </body></html>
