@@ -373,7 +373,6 @@ function publicHome(){
      <button class="client-card-btn" onclick="publicStatusForm()"><span class="cc-icon">📅</span><span class="cc-copy"><strong>Mes rendez-vous</strong><small>À venir et historique</small></span><span class="cc-arrow">›</span></button>
      <button class="client-card-btn" onclick="publicStep1()"><span class="cc-icon">❤️</span><span class="cc-copy"><strong>Mes prestations préférées</strong><small>Mes coiffures favorites</small></span><span class="cc-arrow">›</span></button>
      <button class="client-card-btn" onclick="publicNotificationsPage()"><span class="cc-icon">🔔</span><span class="cc-copy"><strong>Mes notifications</strong><small>Rappels et actualités</small></span><span class="cc-arrow">›</span></button>
-     <button class="client-card-btn" onclick="publicPaymentPage()"><span class="cc-icon">💳</span><span class="cc-copy"><strong>Paiement</strong><small>Wero, PayPal ou virement</small></span><span class="cc-arrow">›</span></button>
    </section>
 
    <button class="client-action" onclick="publicStatusForm()">🔎 &nbsp; SUIVRE MA DEMANDE &nbsp;›</button>
@@ -421,7 +420,7 @@ function publicPaymentPage(){
  <button class="client-card-btn" style="width:100%;margin-top:10px;text-align:left" onclick="startPayment('paypal')"><span class="cc-icon">🅿️</span><span class="cc-copy"><strong>PayPal</strong><small>Paiement en ligne</small></span><span class="cc-arrow">›</span></button>
  <button class="client-card-btn" style="width:100%;margin-top:10px;text-align:left" onclick="startPayment('bank')"><span class="cc-icon">🏦</span><span class="cc-copy"><strong>Virement bancaire</strong><small>Coordonnées bancaires</small></span><span class="cc-arrow">›</span></button>
  <div class="admin-note" style="margin-top:16px">Après le paiement, vous devrez cliquer sur « J’ai effectué le paiement ». La coiffeuse vérifiera ensuite la réception avant de le marquer comme payé.</div></div>
- <button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">← Retour à l'accueil</button></main>`;
+ <button class="secondary" style="width:100%;margin-top:10px" onclick="publicStatusForm()">← Retour à mes rendez-vous</button></main>`;
  applyTheme();
 }
 let currentPaymentAppointment=null;
@@ -679,6 +678,7 @@ async function publicStatusLookup(){
    const rows=await supabaseRpc("get_public_appointment_status",{p_id:id,p_phone:phone});
    const a=Array.isArray(rows)?rows[0]:rows;
    if(!a){if(err)err.textContent="Aucune demande trouvée avec ces informations.";return}
+   currentPaymentAppointment={id:Number(a.id),phone,service:a.service_name||"",amount:Number(a.service_price)||0,status:a.status||""};
    publicStatusPage(a.id,a.status,a.service_name,a.start_at);
  }catch(e){console.error("get_public_appointment_status",e);if(err)err.textContent="Impossible de consulter le statut pour le moment. Réessayez."}
 }
@@ -689,12 +689,26 @@ function publicStatusPage(id,status,service,startAt){
  const st=map[status]||map["En attente"];
  let dateText="";
  if(startAt){const d=new Date(startAt);if(!isNaN(d))dateText=`${d.toLocaleDateString("fr-FR",{timeZone:"Europe/Paris"})} à ${d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})}`}
+ const canPay=status!=="Annulé";
  document.body.className=publicThemeClass();
- document.getElementById("shell").innerHTML=`<main id="app"><div class="card success status-card"><div style="font-size:52px">${st.icon}</div><h2>${st.label}</h2><p class="sub">${esc(service||"")} ${dateText?`<br>📅 ${esc(dateText)}`:""}</p><p><strong class="${st.cls}">${st.label}</strong></p><p>${st.text}</p><div class="small">Référence : CSN-${esc(id)}</div><button class="big-book" onclick="publicStatusLookupSaved()">Actualiser le statut</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">Retour à l'accueil</button></div></main>`;
+ document.getElementById("shell").innerHTML=`<main id="app"><div class="card success status-card"><div style="font-size:52px">${st.icon}</div><h2>${st.label}</h2><p class="sub">${esc(service||"")} ${dateText?`<br>📅 ${esc(dateText)}`:""}</p><p><strong class="${st.cls}">${st.label}</strong></p><p>${st.text}</p><div class="small">Référence : CSN-${esc(id)}</div></div>
+ ${canPay?`<div class="card"><h3 style="margin-top:0">💳 Acompte du rendez-vous</h3><div class="sub">L’acompte de <strong>10 €</strong> est demandé avant la confirmation du rendez-vous.</div><button class="big-book" onclick="openPaymentFromAppointment(${Number(id)})">💳 Payer / déclarer mon acompte de 10 €</button></div>`:""}
+ <button class="big-book" onclick="publicStatusLookupSaved()">Actualiser le statut</button><button class="secondary" style="width:100%;margin-top:10px" onclick="publicHome()">Retour à l'accueil</button></main>`;
  if(status==="En attente"){
    publicStatusTimer=setInterval(()=>publicStatusLookupSaved(true),10000);
  }
 }
+function openPaymentFromAppointment(id){
+ let phone="";
+ try{
+   const pending=JSON.parse(sessionStorage.getItem("csn_pending_booking")||"null");
+   phone=pending?.phone||localStorage.getItem("csn_last_public_phone")||"";
+ }catch(_){try{phone=localStorage.getItem("csn_last_public_phone")||""}catch(__){}}
+ if(!phone && currentPaymentAppointment?.id===Number(id)) phone=currentPaymentAppointment.phone||"";
+ currentPaymentAppointment={...(currentPaymentAppointment||{}),id:Number(id),phone};
+ publicPaymentPage();
+}
+
 async function publicStatusLookupSaved(silent=false){
  let ref="",phone="";
  try{
